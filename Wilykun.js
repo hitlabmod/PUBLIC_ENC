@@ -15,7 +15,8 @@ import { Boom } from '@hapi/boom';
 import fs from 'fs';
 import os from 'os';
 import { exec } from 'child_process';
-import { handleConnectionUpdate, displayCFonts } from './ALAMAK/helpers.js'; // Impor fungsi handleConnectionUpdate dan displayCFonts
+// Hapus impor fungsi dari helpers.js
+// import { handleConnectionUpdate } from './ALAMAK/helpers.js'; // Impor fungsi handleConnectionUpdate
 import { handleDisconnectReason, handleGroupParticipantsUpdate } from './ALAMAK/case.js'; // Impor fungsi handleDisconnectReason dan handleGroupParticipantsUpdate
 import { incrementStatusViewCount, incrementNoReactViewCount } from './lib/statusViewCounter.js';
 import { autoReactStatus, checkUnreadStatuses } from './Random_Emot/Reaksi_Emot.js';
@@ -23,8 +24,6 @@ import { handleAutoTyping } from './FITUR_BY_WILY/Auto_Typing_Ricord_Ceklis_2_no
 import { handleWelcomeMessage } from './FITUR_BY_WILY/welcome.js'; // Impor fungsi handleWelcomeMessage
 import { handleGoodbyeMessage } from './FITUR_BY_WILY/goodbay.js'; // Impor fungsi handleGoodbyeMessage
 import { handleAntiWaMeLink } from './FITUR_BY_WILY/ANTI_GC/antiwame.js'; // Impor fungsi handleAntiWaMeLink
-import { handleAntiWhatsAppLink } from './FITUR_BY_WILY/ANTI_GC/antilinkgc.js'; // Impor fungsi handleAntiWhatsAppLink
-import { handleAntiChannelLink } from './FITUR_BY_WILY/ANTI_GC/antilinkch.js'; // Impor fungsi handleAntiChannelLink
 import { handleAntiForwardedNewsletter } from './FITUR_BY_WILY/ANTI_GC/antiforwardednewsletter.js'; // Impor fungsi handleAntiForwardedNewsletter
 
 import treeKill from './lib/tree-kill.js';
@@ -111,7 +110,43 @@ const startSock = async () => {
 
 	// ngewei info, restart or close
 	Wilykun.ev.on('connection.update', async update => {
-		await handleConnectionUpdate(Wilykun, update, startSock); // Gunakan fungsi handleConnectionUpdate
+		// Pindahkan penanganan pembaruan koneksi ke sini
+		const { connection, lastDisconnect } = update;
+		if (connection === 'close') {
+			const error = lastDisconnect.error;
+			const statusCode = error instanceof Boom ? error.output.statusCode : null;
+			const shouldReconnect = statusCode !== DisconnectReason.loggedOut && statusCode !== 401;
+			console.log('Connection closed due to', error, ', reconnecting', shouldReconnect);
+			// Coba untuk memulai ulang socket jika tidak logout atau otentikasi gagal
+			if (shouldReconnect) {
+				startSock();
+			} else {
+				console.log('Tidak dapat memulai ulang koneksi karena alasan:', statusCode);
+				// Tambahkan log untuk alasan spesifik
+				if (statusCode === 401) {
+					console.log('Otentikasi gagal. Silakan periksa kredensial Anda.');
+					 // Hapus file sesi jika otentikasi gagal
+					try {
+						fs.rmSync(`./${process.env.SESSION_NAME}`, { recursive: true, force: true });
+						console.log('File sesi dihapus. Silakan buat ulang sesi.');
+					} catch (err) {
+						console.error('Gagal menghapus file sesi:', err);
+					}
+					// Tambahkan tindakan untuk menangani otentikasi gagal
+					// Misalnya, Anda dapat mengirim notifikasi atau menghentikan proses
+				} else if (statusCode === DisconnectReason.loggedOut) {
+					console.log('Anda telah logout. Silakan login kembali.');
+					// Tambahkan tindakan untuk menangani logout
+					// Misalnya, Anda dapat menghapus sesi yang ada dan meminta login ulang
+				} else if (statusCode === 515) {
+					console.log('Stream Errored (restart required). Restarting...');
+					// Restart setelah 5 detik
+					setTimeout(() => startSock(), 5000);
+				}
+			}
+		} else if (connection === 'open') {
+			console.log('Connection opened');
+		}
 	});
 
 	// write session kang
@@ -190,14 +225,8 @@ const startSock = async () => {
 		 // Hubungkan fitur anti forwarded newsletter message
 		await handleAntiForwardedNewsletter(Wilykun, m);
 
-		// Hubungkan fitur anti link https://whatsapp.com/channel/ dan whatsapp.com/channel/
-		await handleAntiChannelLink(Wilykun, m);
-
 		// Hubungkan fitur anti wa.me link
 		await handleAntiWaMeLink(Wilykun, m, store);
-
-		// Hubungkan fitur anti WhatsApp link
-		await handleAntiWhatsAppLink(Wilykun, m);
 
 		// status self apa publik
 		if (process.env.SELF === 'true' && !m.isOwner) return;

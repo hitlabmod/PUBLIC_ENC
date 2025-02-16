@@ -57,8 +57,9 @@ export async function sendConnectionMessage(Wilykun, m) {
 		'Goodbye Message': process.env.ENABLE_GOODBYE_MESSAGE === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌',
 		'Handle Errors': process.env.HANDLE_ERRORS === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌',
 		'Anti Forwarded Newsletter': process.env.ENABLE_ANTI_FORWARDED_NEWSLETTER === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌',
-		'Anti Channel Link': process.env.ENABLE_ANTI_CHANNEL_LINK === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌',
-		'Anti WhatsApp Link': process.env.ENABLE_ANTI_WHATSAPP_LINK === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌',
+		// Hapus pengaturan untuk fitur Anti Link Channel dan Anti WhatsApp Link
+		// 'Anti Link Channel': process.env.ENABLE_ANTI_CHANNEL_LINK === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌',
+		// 'Anti WhatsApp Link': process.env.ENABLE_ANTI_WHATSAPP_LINK === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌',
 		'Anti WaMe Link': process.env.ENABLE_ANTI_WAME_LINK === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌'
 	};
 
