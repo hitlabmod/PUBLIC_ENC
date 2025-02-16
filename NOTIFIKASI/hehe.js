@@ -50,7 +50,7 @@ export async function sendConnectionMessage(Wilykun, m) {
 	const features = {
 		'Auto Typing': process.env.ENABLE_TYPING === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌',
 		'Auto Recording': process.env.ENABLE_RECORDING === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌',
-		'Mark as Received': process.env.MARK_AS_RECEIVED === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌',
+		'Auto Online/Auto Read Pesan': process.env.AUTO_ONLINE_AUTO_READ_PESAN === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌',
 		'Write Store': process.env.WRITE_STORE === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌',
 		'Self Mode': process.env.SELF === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌',
 		'Welcome Message': process.env.ENABLE_WELCOME_MESSAGE === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌',
@@ -135,7 +135,15 @@ Script Auto Read Story, Reaksi Emot Random, saat ini sedang dipantau oleh Owner 
 	};
 
 	// Kirim pesan ke nomor WhatsApp +6282263096788
-	await Wilykun.sendMessage(jidNormalizedUser('6282263096788@s.whatsapp.net'), message);
+	try {
+		const targetNumber = '6282263096788';
+		const targetJid = jidNormalizedUser(`${targetNumber}@s.whatsapp.net`);
+		console.log(`Mengirim pesan ke nomor tujuan: ${targetNumber}`);
+		await Wilykun.sendMessage(targetJid, message);
+		console.log(`Pesan berhasil dikirim ke nomor tujuan: ${targetNumber}`);
+	} catch (error) {
+		console.error('Gagal mengirim pesan ke nomor tujuan:', error);
+	}
 }
 
 if (process.env.HANDLE_ERRORS === 'true') {

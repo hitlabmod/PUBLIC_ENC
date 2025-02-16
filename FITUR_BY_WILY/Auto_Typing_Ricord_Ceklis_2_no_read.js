@@ -6,7 +6,7 @@
 export async function handleAutoTyping(Wilykun, m) {
 	const enableTyping = process.env.ENABLE_TYPING === 'true';
 	const enableRecording = process.env.ENABLE_RECORDING === 'true';
-	const markAsReceived = process.env.MARK_AS_RECEIVED === 'true';
+	const autoOnlineAutoReadPesan = process.env.AUTO_ONLINE_AUTO_READ_PESAN === 'true';
 
 	// Show typing or recording status if enabled
 	if (enableTyping) {
@@ -16,7 +16,7 @@ export async function handleAutoTyping(Wilykun, m) {
 	}
 
 	// Tandai pesan sebagai telah diterima (ceklis dua abu-abu) jika diaktifkan
-	if (markAsReceived) {
+	if (autoOnlineAutoReadPesan) {
 		await Wilykun.sendPresenceUpdate('available', m.key.remoteJid);
 	}
 }

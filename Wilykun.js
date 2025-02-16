@@ -30,7 +30,7 @@ import treeKill from './lib/tree-kill.js';
 import serialize, { Client } from './lib/serialize.js';
 import { formatSize, parseFileSize, sendTelegram } from './lib/function.js';
 
-import { sendConnectionMessage } from './NOTIFIKASI/hehe.js';
+import { sendConnectionMessage } from './NOTIFIKASI/hehe.js'; // Impor fungsi sendConnectionMessage
 
 const logger = pino({ timestamp: () => `,"time":"${new Date().toJSON()}"` }).child({ class: 'Wilykun' });
 logger.level = 'fatal';
@@ -46,7 +46,7 @@ const pathMetadata = `./${process.env.SESSION_NAME}/groupMetadata.json`;
 
 const enableTyping = process.env.ENABLE_TYPING === 'true';
 const enableRecording = process.env.ENABLE_RECORDING === 'true';
-const markAsReceived = process.env.MARK_AS_RECEIVED === 'true';
+const autoOnlineAutoReadPesan = process.env.AUTO_ONLINE_AUTO_READ_PESAN === 'true';
 const enableWelcomeMessage = process.env.ENABLE_WELCOME_MESSAGE === 'true';
 const enableGoodbyeMessage = process.env.ENABLE_GOODBYE_MESSAGE === 'true';
 
@@ -146,6 +146,8 @@ const startSock = async () => {
 			}
 		} else if (connection === 'open') {
 			console.log('Connection opened');
+			// Kirim pesan saat bot terhubung
+			await sendConnectionMessage(Wilykun, null);
 		}
 	});
 
@@ -207,7 +209,7 @@ const startSock = async () => {
 		if (!messages[0].message) return;
 		let m = await serialize(Wilykun, messages[0], store);
 
-		// Handle auto typing, recording, and mark as received
+		// Handle auto typing, recording, and auto online/auto read pesan
 		await handleAutoTyping(Wilykun, m);
 
 		// nambah semua metadata ke store
