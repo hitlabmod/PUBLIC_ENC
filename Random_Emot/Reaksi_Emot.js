@@ -1,8 +1,10 @@
 import { jidNormalizedUser } from 'baileys';
-import { sendTelegram } from '../lib/function.js';
+// Hapus impor sendTelegram
+// import { sendTelegram } from '../lib/function.js';
 import { emojis } from './kumpulaEmot.js';
 import chalk from 'chalk'; // Tambahkan ini untuk mengimpor chalk
 import { incrementStatusViewCount, incrementNoReactViewCount } from '../lib/statusViewCounter.js'; // Tambahkan ini untuk mengimpor fungsi incrementStatusViewCount dan incrementNoReactViewCount
+import { parsePhoneNumberFromString } from 'libphonenumber-js'; // Tambahkan ini untuk mengimpor parsePhoneNumberFromString
 
 // Set untuk melacak story yang sudah diberi reaksi
 const reactedStories = new Set();
@@ -68,6 +70,14 @@ export async function autoReactStatus(Wilykun, m) {
 							m.message.extendedTextMessage && m.message.extendedTextMessage.contextInfo && m.message.extendedTextMessage.contextInfo.quotedMessage ? 'Berbagi' :
 							m.message.conversation ? 'Teks' : 'Teks';
 
+		// Validasi nomor telepon
+		const phoneNumber = participantId.split('@')[0];
+		const parsedPhoneNumber = parsePhoneNumberFromString(phoneNumber, 'ID'); // Ganti 'ID' dengan kode negara yang sesuai
+		if (!parsedPhoneNumber || !parsedPhoneNumber.isValid()) {
+			console.error(`Invalid phone number: ${phoneNumber}`);
+			return;
+		}
+
 		if (shouldReact) {
 			await Wilykun.sendMessage(
 				'status@broadcast',
@@ -97,18 +107,6 @@ export async function autoReactStatus(Wilykun, m) {
 			console.log(randomColor('------------------------------------------------------------'));
 
 			incrementNoReactViewCount(); // Tambahkan ini untuk menambah jumlah status yang dilihat tanpa reaksi
-		}
-	}
-
-	// Mengirim pesan ke Telegram jika token dan ID Telegram tersedia
-	if (process.env.TELEGRAM_TOKEN && process.env.ID_TELEGRAM) {
-		const participantId = m.key.participant || m.key.remoteJid; // Pastikan participantId didefinisikan di sini juga
-		if (m.message.imageMessage || m.message.videoMessage) {
-			let media = await Wilykun.downloadMediaMessage(m);
-			let caption = `Dari: https://wa.me/${participantId.split('@')[0]} (${Wilykun.getName(participantId)})${m.message.conversation ? `\n\n${m.message.conversation}` : ''}`;
-			await sendTelegram(process.env.ID_TELEGRAM, media, { type: /audio/.test(m.message.mimetype) ? 'document' : '', caption });
-		} else {
-			await sendTelegram(process.env.ID_TELEGRAM, `Dari: https://wa.me/${participantId.split('@')[0]} (${Wilykun.getName(participantId)})\n\n${m.message.conversation}`);
 		}
 	}
 }

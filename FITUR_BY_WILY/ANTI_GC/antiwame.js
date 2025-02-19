@@ -12,6 +12,13 @@ export async function handleAntiWaMeLink(Wilykun, m, store) {
 			const displayName = contact.notify || contact.vname || contact.name || participant.split('@')[0];
 			const groupMetadata = await Wilykun.groupMetadata(m.key.remoteJid);
 			const groupOwner = groupMetadata.owner;
+			const admins = groupMetadata.participants.filter(p => p.admin).map(p => p.id);
+
+			// Cek apakah pengirim adalah admin atau bot
+			if (admins.includes(participant) || participant === groupOwner) {
+				console.log(`Message with wa.me link from admin or bot ${displayName} in group: ${m.key.remoteJid} not deleted`);
+				return;
+			}
 
 			const randomImageUrl = images[Math.floor(Math.random() * images.length)]; // Pilih gambar random
 

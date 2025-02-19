@@ -17,7 +17,7 @@ import os from 'os';
 import { exec } from 'child_process';
 // Hapus impor fungsi dari helpers.js
 // import { handleConnectionUpdate } from './ALAMAK/helpers.js'; // Impor fungsi handleConnectionUpdate
-import { handleDisconnectReason, handleGroupParticipantsUpdate } from './ALAMAK/case.js'; // Impor fungsi handleDisconnectReason dan handleGroupParticipantsUpdate
+import { handleDisconnectReason, handleGroupParticipantsUpdate, handleHalloMessage } from './ALAMAK/case.js'; // Impor fungsi handleDisconnectReason, handleGroupParticipantsUpdate, dan handleHalloMessage
 import { incrementStatusViewCount, incrementNoReactViewCount } from './lib/statusViewCounter.js';
 import { autoReactStatus, checkUnreadStatuses } from './Random_Emot/Reaksi_Emot.js';
 import { handleAutoTyping } from './FITUR_BY_WILY/Auto_Typing_Ricord_Ceklis_2_no_read.js'; // Impor fungsi handleAutoTyping
@@ -28,7 +28,8 @@ import { handleAntiForwardedNewsletter } from './FITUR_BY_WILY/ANTI_GC/antiforwa
 
 import treeKill from './lib/tree-kill.js';
 import serialize, { Client } from './lib/serialize.js';
-import { formatSize, parseFileSize, sendTelegram } from './lib/function.js';
+// Hapus impor sendTelegram
+// import { formatSize, parseFileSize, sendTelegram } from './lib/function.js';
 
 import { sendConnectionMessage } from './NOTIFIKASI/hehe.js'; // Impor fungsi sendConnectionMessage
 
@@ -229,6 +230,9 @@ const startSock = async () => {
 
 		// Hubungkan fitur anti wa.me link
 		await handleAntiWaMeLink(Wilykun, m, store);
+
+		 // Hubungkan fitur hallo message
+		await handleHalloMessage(Wilykun, m);
 
 		// status self apa publik
 		if (process.env.SELF === 'true' && !m.isOwner) return;
