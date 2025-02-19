@@ -64,17 +64,17 @@ export const handleWelcomeMessage = async (Wilykun, update) => {
 𝗦𝗲𝗯𝗲𝗹𝘂𝗺 𝗶𝘁𝘂 𝗽𝗲𝗿𝗸𝗲𝗻𝗮𝗹𝗸𝗮𝗻 𝗱𝘂𝗹𝘂 𝗸𝗮𝗺𝘂 : 
 ─
 NAMA: ...? 📝
-UMUR: ...? 🎂
-ASKOT: ...? 🏙️
-PEKERJAAN: ...? 💼
-HOBI: ...? 🎨
-CITA-CITA: ...? 🌟
+*UMUR: ...?* 🎂
+*ASKOT: ...?* 🏙️
+*PEKERJAAN: ...?* 💼
+*HOBI: ...?* 🎨
+*CITA-CITA: ...?* 🌟
 ─
-📢 INFORMASI GROUP 📢
-PEMBUAT GROUP: { @${groupOwner.split('@')[0]} 👤 }
-GROUP DI BUAT PADA: { ${groupCreationDate} 📅 }
-JUMLAH ADMIN SAAT INI: { ${adminCount} 👮 }
-JUMLAH ANGGOTA SAAT INI: { ${memberCount} 👥 }`,
+*📢 INFORMASI GROUP 📢*
+PEMBUAT GROUP : *{ @${groupOwner.split('@')[0]} 👤 }*
+GROUP DI BUAT PADA : *{ ${groupCreationDate} 📅 }*
+JUMLAH ADMIN SAAT INI : *{ ${adminCount} 👮 }*
+JUMLAH ANGGOTA SAAT INI : *{ ${memberCount} 👥 }*`,
 					contextInfo: {
 						mentionedJid: [participant, groupOwner],
 						forwardingScore: 100,

@@ -61,14 +61,14 @@ export const handleGoodbyeMessage = async (Wilykun, update) => {
 					image: { url: ppUrl },
 					caption: `Selamat tinggal @${participant.split('@')[0]}! Terima kasih telah menjadi bagian dari grup ini. Semoga sukses di tempat yang baru! 👋
 ─
-{ Kata-kata dari saya, untuk orang yang meninggalkan group ini }
+*{ Kata-kata dari saya, untuk orang yang meninggalkan group ini }*
 ${randomWiseWord} 💬
 ─
-📢 INFORMASI GROUP 📢
-PEMBUAT GROUP: { @${groupOwner.split('@')[0]} 👤 }
-GROUP DI BUAT PADA: { ${groupCreationDate} 📅 }
-JUMLAH ADMIN SAAT INI: { ${adminCount} 👮 }
-JUMLAH ANGGOTA SAAT INI: { ${memberCount} 👥 }`,
+*📢 INFORMASI GROUP 📢*
+PEMBUAT GROUP : *{ @${groupOwner.split('@')[0]} 👤 }*
+GROUP DI BUAT PADA : *{ ${groupCreationDate} 📅 }*
+JUMLAH ADMIN SAAT INI : *{ ${adminCount} 👮 }*
+JUMLAH ANGGOTA SAAT INI : *{ ${memberCount} 👥 }*`,
 					contextInfo: {
 						mentionedJid: [participant, groupOwner],
 						forwardingScore: 100,

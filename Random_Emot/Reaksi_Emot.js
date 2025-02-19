@@ -1,10 +1,13 @@
 import { jidNormalizedUser } from 'baileys';
 // Hapus impor sendTelegram
 // import { sendTelegram } from '../lib/function.js';
-import { emojis } from './kumpulaEmot.js';
 import chalk from 'chalk'; // Tambahkan ini untuk mengimpor chalk
 import { incrementStatusViewCount, incrementNoReactViewCount } from '../lib/statusViewCounter.js'; // Tambahkan ini untuk mengimpor fungsi incrementStatusViewCount dan incrementNoReactViewCount
 import { parsePhoneNumberFromString } from 'libphonenumber-js'; // Tambahkan ini untuk mengimpor parsePhoneNumberFromString
+
+// Pilih file emoticon berdasarkan pengaturan di .env
+const emotFile = process.env.EMOT_FILE === 'Emot_Lengkap' ? './Emot_Lengkap.js' : process.env.EMOT_FILE === 'Emot_Langka' ? './Emot_Langka.js' : './Emot_Constum.js';
+const { emojis } = await import(emotFile);
 
 // Set untuk melacak story yang sudah diberi reaksi
 const reactedStories = new Set();
