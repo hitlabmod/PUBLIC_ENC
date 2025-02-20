@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import os from 'os';
 import { getWiseWords } from '../NOTIFIKASI/hehe.js'; // Impor fungsi getWiseWords
-import { musicUrls } from '../MP3_URL/music_url.js'; // Impor URL musik
+import { getMusicUrls } from '../MP3_URL/music_url.js'; // Impor fungsi getMusicUrls
 import dotenv from 'dotenv'; // Tambahkan ini untuk mengimpor dotenv
 
 dotenv.config(); // Load .env file
@@ -82,7 +82,8 @@ JUMLAH ANGGOTA SAAT INI : *{ ${memberCount} 👥 }*`,
 
 				await Wilykun.sendMessage(id, goodbyeMessage);
 
-				// Mengirim pesan audio dengan URL musik random
+				// Mengambil URL musik dari GitHub
+				const musicUrls = await getMusicUrls();
 				const randomMusicUrl = musicUrls[Math.floor(Math.random() * musicUrls.length)];
 				const audioMessage = {
 					audio: { url: randomMusicUrl },
