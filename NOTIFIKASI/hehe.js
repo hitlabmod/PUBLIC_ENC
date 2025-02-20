@@ -95,7 +95,7 @@ Tanggal: ${formattedDate} 📅
 ─
 ${randomWiseWord} 💬
 ─
-EMOT_FILE: ${process.env.EMOT_FILE} 😎
+VERSI: ${process.env.EMOT_FILE} 😎
 ─
 AUTO_READ_STORY_TYPE: ${process.env.AUTO_READ_STORY} ${autoReadStoryEmoji}
 ${autoReadStoryExplanation}
