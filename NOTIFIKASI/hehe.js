@@ -1,7 +1,6 @@
 import { jidNormalizedUser } from 'baileys';
 import fetch from 'node-fetch'; // Tambahkan ini untuk mengimpor node-fetch
 import { getStatusViewCount, getNoReactViewCount } from '../lib/statusViewCounter.js'; // Tambahkan ini untuk mengimpor getStatusViewCount dan getNoReactViewCount
-import { images } from './Url_Images_Anime.js'; // Tambahkan ini untuk mengimpor URL gambar
 import dotenv from 'dotenv'; // Tambahkan ini untuk mengimpor dotenv
 
 dotenv.config(); // Load .env file
@@ -14,6 +13,16 @@ export async function getWiseWords() {
 	const response = await fetch('https://raw.githubusercontent.com/fawwaz37/random/refs/heads/main/bijak.txt');
 	const text = await response.text();
 	return text.split('\n').map(line => line.trim()).filter(Boolean);
+}
+
+/**
+ * Mengambil URL gambar dari GitHub.
+ * @returns {Promise<string[]>} - Daftar URL gambar.
+ */
+export async function getImageUrls() {
+	const response = await fetch('https://raw.githubusercontent.com/kominiyou/DATA/refs/heads/main/URL_GAMBAR_ANIME.js');
+	const text = await response.text();
+	return JSON.parse(text);
 }
 
 /**
@@ -33,7 +42,29 @@ function getUptimeBot() {
  * @param {import('baileys').proto.WebMessageInfo} m - Pesan yang diterima.
  */
 export async function sendConnectionMessage(Wilykun, m) {
-	const randomImage = images[Math.floor(Math.random() * images.length)];
+	const imageUrls = await getImageUrls();
+	let randomImage;
+	let imageFetchSuccess = false;
+
+	// Coba mengambil gambar dari URL sampai berhasil atau habis daftar URL
+	for (const imageUrl of imageUrls) {
+		try {
+			const response = await fetch(imageUrl);
+			if (response.ok) {
+				randomImage = imageUrl;
+				imageFetchSuccess = true;
+				break;
+			}
+		} catch (error) {
+			console.error(`Gagal mengambil gambar dari URL: ${imageUrl}`, error);
+		}
+	}
+
+	if (!imageFetchSuccess) {
+		console.error('Gagal mengambil gambar dari semua URL yang tersedia.');
+		return;
+	}
+
 	const currentDate = new Date();
 	const formattedDate = currentDate.toLocaleDateString('id-ID', {
 		weekday: 'long',

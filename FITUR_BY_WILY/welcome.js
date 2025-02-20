@@ -4,8 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import os from 'os';
 import dotenv from 'dotenv';
-import { musicUrls } from '../MP3_URL/music_url.js';
-import { images } from '../NOTIFIKASI/Url_Images_Anime.js'; // Impor URL gambar
+import { musicUrls } from '../MP3_URL/music_url.js'; // Impor URL musik
 
 dotenv.config(); // Load .env file
 
@@ -53,7 +52,7 @@ export const handleWelcomeMessage = async (Wilykun, update) => {
 				try {
 					ppUrl = await Wilykun.profilePictureUrl(participant, 'image');
 				} catch {
-					ppUrl = images[Math.floor(Math.random() * images.length)]; // Gambar default dari URL_Images_Anime.js
+					ppUrl = 'https://example.com/default-profile-picture.jpg'; // Gambar default jika tidak ada
 				}
 
 				// Mengirim pesan selamat datang dengan gambar
@@ -63,7 +62,7 @@ export const handleWelcomeMessage = async (Wilykun, update) => {
 ─
 𝗦𝗲𝗯𝗲𝗹𝘂𝗺 𝗶𝘁𝘂 𝗽𝗲𝗿𝗸𝗲𝗻𝗮𝗹𝗸𝗮𝗻 𝗱𝘂𝗹𝘂 𝗸𝗮𝗺𝘂 : 
 ─
-NAMA: ...? 📝
+*NAMA: ...?* 📝
 *UMUR: ...?* 🎂
 *ASKOT: ...?* 🏙️
 *PEKERJAAN: ...?* 💼
@@ -92,7 +91,6 @@ JUMLAH ANGGOTA SAAT INI : *{ ${memberCount} 👥 }*`,
 
 				// Mengirim pesan audio dengan URL musik random
 				const randomMusicUrl = musicUrls[Math.floor(Math.random() * musicUrls.length)];
-				const randomImageUrl = images[Math.floor(Math.random() * images.length)]; // Pilih gambar random
 				const audioMessage = {
 					audio: { url: randomMusicUrl },
 					mimetype: 'audio/mpeg',

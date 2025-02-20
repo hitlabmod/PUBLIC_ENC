@@ -1,5 +1,4 @@
 import dotenv from 'dotenv';
-import { images } from '../../NOTIFIKASI/Url_Images_Anime.js'; // Impor URL gambar
 
 dotenv.config(); // Load .env file
 
@@ -20,11 +19,16 @@ export async function handleAntiWaMeLink(Wilykun, m, store) {
 				return;
 			}
 
-			const randomImageUrl = images[Math.floor(Math.random() * images.length)]; // Pilih gambar random
+			let ppUrl;
+			try {
+				ppUrl = await Wilykun.profilePictureUrl(participant, 'image');
+			} catch {
+				ppUrl = 'https://example.com/default-profile-picture.jpg'; // Gambar default jika tidak ada
+			}
 
 			await Wilykun.readMessages([m.key]); // Mark the message as read
 			await Wilykun.sendMessage(m.key.remoteJid, { 
-				image: { url: randomImageUrl },
+				image: { url: ppUrl },
 				caption: `Halo @${displayName}, link wa.me terdeteksi dan telah dihapus. Mohon untuk tidak membagikan link tersebut lagi 🚫`,
 				contextInfo: {
 					mentionedJid: [participant, groupOwner],
