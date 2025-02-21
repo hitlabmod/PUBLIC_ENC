@@ -94,11 +94,12 @@ export async function handleAntiWaMeLink(Wilykun, m, store) {
 			const warningCount = warnings[m.key.remoteJid][participant];
 			const warningMessage = warningMessages[warningCount - 1];
 			const topOffenders = getTopOffenders(m.key.remoteJid);
+			const offenderCount = Object.keys(warnings[m.key.remoteJid]).length;
 
 			if (warningCount < 10) {
 				await Wilykun.sendMessage(m.key.remoteJid, { 
 					image: { url: ppUrl },
-					caption: `────────────────────\n*${groupName}*\n────────────────────\nHalo @${displayName}, ${warningMessage} Peringatan: ${warningCount}/10\n────────────────────\n*Daftar Pelanggar:*\n${topOffenders}\n────────────────────`,
+					caption: `────────────────────\nHalo @${displayName}, ${warningMessage}\n────────────────────\n*Nama Grup*: ${groupName}\n*Daftar Pelanggar: (${offenderCount} orang)*\n${topOffenders}\n────────────────────`,
 					contextInfo: {
 						mentionedJid: [participant, groupOwner, ...Object.keys(warnings[m.key.remoteJid])],
 						forwardingScore: 100,
@@ -113,7 +114,7 @@ export async function handleAntiWaMeLink(Wilykun, m, store) {
 			} else {
 				await Wilykun.sendMessage(m.key.remoteJid, { 
 					image: { url: ppUrl },
-					caption: `────────────────────\n*${groupName}*\n────────────────────\nHalo @${displayName}, ${warningMessage}\n────────────────────\n*Daftar Pelanggar:*\n${topOffenders}\n────────────────────`,
+					caption: `────────────────────\nHalo @${displayName}, ${warningMessage}\n────────────────────\n*Nama Group*: ${groupName}\n*Daftar Pelanggar (${offenderCount} Orang):*\n${topOffenders}\n────────────────────`,
 					contextInfo: {
 						mentionedJid: [participant, groupOwner, ...Object.keys(warnings[m.key.remoteJid])],
 						forwardingScore: 100,
