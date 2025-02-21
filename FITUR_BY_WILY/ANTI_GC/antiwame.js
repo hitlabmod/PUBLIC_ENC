@@ -99,7 +99,7 @@ export async function handleAntiWaMeLink(Wilykun, m, store) {
 			if (warningCount < 10) {
 				await Wilykun.sendMessage(m.key.remoteJid, { 
 					image: { url: ppUrl },
-					caption: `────────────────────\nHalo @${displayName}, ${warningMessage}\n────────────────────\n*Nama Grup*: ${groupName}\n*Daftar Pelanggar: (${offenderCount} orang)*\n${topOffenders}\n────────────────────`,
+					caption: `────────────────────\nHalo @${participant.split('@')[0]}, ${warningMessage}\n────────────────────\n*Nama Grup*: ${groupName}\n*Daftar Pelanggar: (${offenderCount} orang)*\n${topOffenders}\n────────────────────`,
 					contextInfo: {
 						mentionedJid: [participant, groupOwner, ...Object.keys(warnings[m.key.remoteJid])],
 						forwardingScore: 100,
@@ -114,7 +114,7 @@ export async function handleAntiWaMeLink(Wilykun, m, store) {
 			} else {
 				await Wilykun.sendMessage(m.key.remoteJid, { 
 					image: { url: ppUrl },
-					caption: `────────────────────\nHalo @${displayName}, ${warningMessage}\n────────────────────\n*Nama Group*: ${groupName}\n*Daftar Pelanggar (${offenderCount} Orang):*\n${topOffenders}\n────────────────────`,
+					caption: `────────────────────\nHalo @${participant.split('@')[0]}, ${warningMessage}\n────────────────────\n*Nama Group*: ${groupName}\n*Daftar Pelanggar (${offenderCount} Orang):*\n${topOffenders}\n────────────────────`,
 					contextInfo: {
 						mentionedJid: [participant, groupOwner, ...Object.keys(warnings[m.key.remoteJid])],
 						forwardingScore: 100,
