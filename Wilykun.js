@@ -18,7 +18,8 @@ import { exec } from 'child_process';
 // Hapus impor fungsi dari helpers.js
 // import { handleConnectionUpdate } from './ALAMAK/helpers.js'; // Impor fungsi handleConnectionUpdate
 import { handleDisconnectReason, handleGroupParticipantsUpdate, handleHalloMessage } from './ALAMAK/case.js'; // Impor fungsi handleDisconnectReason, handleGroupParticipantsUpdate, dan handleHalloMessage
-import { incrementStatusViewCount, incrementNoReactViewCount } from './lib/statusViewCounter.js';
+// Hapus impor fungsi dari statusViewCounter.js
+// import { incrementStatusViewCount, incrementNoReactViewCount } from './lib/statusViewCounter.js';
 import { autoReactStatus, checkUnreadStatuses } from './Random_Emot/Code_Auto_Read_Story.js';
 import { handleAutoTyping } from './FITUR_BY_WILY/Auto_Typing_Ricord_Ceklis_2_no_read.js'; // Impor fungsi handleAutoTyping
 import { handleWelcomeMessage } from './FITUR_BY_WILY/welcome.js'; // Impor fungsi handleWelcomeMessage
@@ -221,8 +222,9 @@ const startSock = async () => {
 			if (m.type === 'protocolMessage' && m.message.protocolMessage.type === 0) return;
 			await Wilykun.readMessages([m.key]);
 			await autoReactStatus(Wilykun, m);
-			incrementStatusViewCount(); // Tambahkan ini untuk menambah jumlah status yang dilihat
-			incrementNoReactViewCount(); // Tambahkan ini untuk menambah jumlah status yang dilihat tanpa reaksi
+			// Hapus bagian yang menambah jumlah status yang dilihat
+			// incrementStatusViewCount();
+			// incrementNoReactViewCount();
 		}
 
 		 // Hubungkan fitur anti forwarded newsletter message

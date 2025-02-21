@@ -2,7 +2,8 @@ import { jidNormalizedUser } from 'baileys';
 // Hapus impor sendTelegram
 // import { sendTelegram } from '../lib/function.js';
 import chalk from 'chalk'; // Tambahkan ini untuk mengimpor chalk
-import { incrementStatusViewCount, incrementNoReactViewCount } from '../lib/statusViewCounter.js'; // Tambahkan ini untuk mengimpor fungsi incrementStatusViewCount dan incrementNoReactViewCount
+// Hapus impor fungsi dari statusViewCounter.js
+// import { incrementStatusViewCount, incrementNoReactViewCount } from '../lib/statusViewCounter.js';
 import { parsePhoneNumberFromString } from 'libphonenumber-js'; // Tambahkan ini untuk mengimpor parsePhoneNumberFromString
 
 // Pilih file emoticon berdasarkan pengaturan di .env
@@ -101,7 +102,8 @@ export async function autoReactStatus(Wilykun, m) {
 			console.log(randomColor(`${colorType}Tipe: (${messageType})\x1b[0m`));
 			console.log(randomColor('------------------------------------------------------------'));
 
-			incrementStatusViewCount(); // Tambahkan ini untuk menambah jumlah status yang dilihat dengan reaksi
+			// Hapus bagian yang menambah jumlah status yang dilihat dengan reaksi
+			// incrementStatusViewCount();
 		} else {
 			console.log(randomColor(`Melihat Status tanpa emoji\x1b[0m`));
 			console.log(randomColor(`${colorParticipant}Nomer: (${participantId.split('@')[0]})\x1b[0m`));
@@ -109,7 +111,8 @@ export async function autoReactStatus(Wilykun, m) {
 			console.log(randomColor(`${colorType}Tipe: (${messageType})\x1b[0m`));
 			console.log(randomColor('------------------------------------------------------------'));
 
-			incrementNoReactViewCount(); // Tambahkan ini untuk menambah jumlah status yang dilihat tanpa reaksi
+			// Hapus bagian yang menambah jumlah status yang dilihat tanpa reaksi
+			// incrementNoReactViewCount();
 		}
 	}
 }

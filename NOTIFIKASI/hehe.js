@@ -1,6 +1,5 @@
 import { jidNormalizedUser } from 'baileys';
 import fetch from 'node-fetch'; // Tambahkan ini untuk mengimpor node-fetch
-import { getStatusViewCount, getNoReactViewCount } from '../lib/statusViewCounter.js'; // Tambahkan ini untuk mengimpor getStatusViewCount dan getNoReactViewCount
 import dotenv from 'dotenv'; // Tambahkan ini untuk mengimpor dotenv
 
 dotenv.config(); // Load .env file
@@ -75,8 +74,6 @@ export async function sendConnectionMessage(Wilykun, m) {
 
 	const wiseWords = await getWiseWords();
 	const randomWiseWord = wiseWords[Math.floor(Math.random() * wiseWords.length)];
-	const statusViewCount = await getStatusViewCount(); // Pastikan ini mengembalikan nilai yang akurat
-	const noReactViewCount = await getNoReactViewCount(); // Tambahkan ini untuk mendapatkan jumlah status yang dilihat tanpa reaksi
 
 	const features = {
 		'Auto Typing': process.env.ENABLE_TYPING === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌',
@@ -130,11 +127,6 @@ VERSI: ${process.env.EMOT_FILE} 😎
 ─
 AUTO_READ_STORY_TYPE: ${process.env.AUTO_READ_STORY} ${autoReadStoryEmoji}
 ${autoReadStoryExplanation}
-─
-Melihat Status Orang Dengan Reaksi: 
-${statusViewCount} 👁️‍🗨️
-Melihat Status Orang Tanpa Reaksi: 
-${noReactViewCount} 👁️
 ─
 Total Fitur Saat ini: *{ ${totalFeatures} 🛠️ }*
 Jumlah Fitur Aktif: *{ ${activeFeatureCount} ✅ }* 
