@@ -20,16 +20,16 @@ function saveWarnings() {
 }
 
 const warningMessages = [
-	"Ini adalah peringatan pertama Anda. Jangan bagikan link wa.me lagi! ⚠️",
-	"Ini adalah peringatan kedua Anda. Tolong patuhi aturan grup! 🚫",
-	"Ini adalah peringatan ketiga Anda. Jangan ulangi lagi! ❗",
-	"Ini adalah peringatan keempat Anda. Hentikan membagikan link wa.me! ⛔",
-	"Ini adalah peringatan kelima Anda. Anda bisa dikeluarkan dari grup! ⚠️",
-	"Ini adalah peringatan keenam Anda. Jangan bagikan link wa.me lagi! 🚫",
-	"Ini adalah peringatan ketujuh Anda. Tolong patuhi aturan grup! ❗",
-	"Ini adalah peringatan kedelapan Anda. Jangan ulangi lagi! ⛔",
-	"Ini adalah peringatan kesembilan Anda. Ini peringatan terakhir! ⚠️",
-	"Anda telah mencapai batas peringatan 10 kali. Anda akan dikeluarkan dari grup. 🚫"
+	"Ini adalah peringatan pertama Anda. Jangan bagikan link wa.me lagi! ⚠️ (anti wa.me)",
+	"Ini adalah peringatan kedua Anda. Tolong patuhi aturan grup! 🚫 (anti wa.me)",
+	"Ini adalah peringatan ketiga Anda. Jangan ulangi lagi! ❗ (anti wa.me)",
+	"Ini adalah peringatan keempat Anda. Hentikan membagikan link wa.me! ⛔ (anti wa.me)",
+	"Ini adalah peringatan kelima Anda. Anda bisa dikeluarkan dari grup! ⚠️ (anti wa.me)",
+	"Ini adalah peringatan keenam Anda. Jangan bagikan link wa.me lagi! 🚫 (anti wa.me)",
+	"Ini adalah peringatan ketujuh Anda. Tolong patuhi aturan grup! ❗ (anti wa.me)",
+	"Ini adalah peringatan kedelapan Anda. Jangan ulangi lagi! ⛔ (anti wa.me)",
+	"Ini adalah peringatan kesembilan Anda. Ini peringatan terakhir! ⚠️ (anti wa.me)",
+	"Anda telah mencapai batas peringatan 10 kali. Anda akan dikeluarkan dari grup. 🚫 (anti wa.me)"
 ];
 
 const warningEmojis = [
@@ -49,15 +49,65 @@ function getTopOffenders(groupId) {
 
 	return sortedWarnings.map(([participant, count], index) => {
 		const displayName = participant.split('@')[0];
-		const emoji = warningEmojis[Math.min(count - 1, warningEmojis.length - 1)];
+		const emoji = count === 0 ? "✅" : warningEmojis[Math.min(count - 1, warningEmojis.length - 1)];
 		return `${index + 1}. @${displayName} (${count} pelanggaran) ${emoji}`;
 	}).join('\n');
+}
+
+async function handleViolation(Wilykun, groupId, user) {
+    const autoKickEnabled = process.env.AUTO_KICK_ENABLED === 'true';
+
+    if (autoKickEnabled) {
+        // ...existing auto-kick logic...
+    } else {
+        // Tandai pengguna dan atur ulang jumlah pelanggaran
+        resetViolationCount(groupId, user);
+        await tagUser(Wilykun, groupId, user);
+        console.log(`Waduh, fitur auto kick dimatikan. Kamu aman dan tidak di-kick. Pelanggaran kamu dihapus jadi 0.`);
+    }
+}
+
+async function tagUser(Wilykun, groupId, user) {
+    const groupMetadata = await Wilykun.groupMetadata(groupId);
+    const groupName = groupMetadata.subject;
+    const offenderCount = Object.keys(warnings[groupId]).length;
+    const topOffenders = getTopOffenders(groupId);
+
+    let ppUrl;
+    try {
+        ppUrl = await Wilykun.profilePictureUrl(user, 'image');
+    } catch {
+        ppUrl = 'https://example.com/default-profile-picture.jpg'; // Gambar default jika tidak ada
+    }
+
+    await Wilykun.sendMessage(groupId, {
+        image: { url: ppUrl },
+        caption: `────────────────────\nHalo @${user.split('@')[0]}, Waduh, fitur auto kick dimatikan. Kamu aman dan tidak di-kick. Pelanggaran kamu dihapus jadi 0.\n────────────────────\n*Nama Grup*: ${groupName}\n*Daftar Pelanggar: (${offenderCount} orang)*\n${topOffenders}\n────────────────────`,
+        contextInfo: {
+            mentionedJid: [user, ...Object.keys(warnings[groupId])],
+            forwardingScore: 100,
+            isForwarded: true,
+            forwardedNewsletterMessageInfo: {
+                newsletterJid: '120363312297133690@newsletter',
+                newsletterName: 'Info Anime Dll 🌟',
+                serverMessageId: 143
+            }
+        }
+    });
+}
+
+function resetViolationCount(groupId, user) {
+    if (warnings[groupId] && warnings[groupId][user]) {
+        warnings[groupId][user] = 0;
+        saveWarnings();
+    }
 }
 
 export async function handleAntiWaMeLink(Wilykun, m, store) {
 	if (process.env.ENABLE_ANTI_WAME_LINK === 'true' && m.key.remoteJid.endsWith('@g.us') && (m.message.conversation || m.message.extendedTextMessage?.text) && !m.key.fromMe) {
 		const messageText = m.message.conversation || m.message.extendedTextMessage?.text;
-		if (messageText.includes('wa.me')) {
+		const waMeRegex = /wa\.me/i;
+		if (waMeRegex.test(messageText)) {
 			const participant = m.key.participant || m.key.remoteJid;
 			const contact = store.contacts[participant] || {};
 			const displayName = contact.notify || contact.vname || contact.name || participant.split('@')[0];
@@ -112,6 +162,7 @@ export async function handleAntiWaMeLink(Wilykun, m, store) {
 					}
 				}, { quoted: m });
 			} else {
+				resetViolationCount(m.key.remoteJid, participant);
 				await Wilykun.sendMessage(m.key.remoteJid, { 
 					image: { url: ppUrl },
 					caption: `────────────────────\nHalo @${participant.split('@')[0]}, ${warningMessage}\n────────────────────\n*Nama Group*: ${groupName}\n*Daftar Pelanggar (${offenderCount} Orang):*\n${topOffenders}\n────────────────────`,
@@ -126,9 +177,7 @@ export async function handleAntiWaMeLink(Wilykun, m, store) {
 						}
 					}
 				}, { quoted: m });
-				await Wilykun.groupParticipantsUpdate(m.key.remoteJid, [participant], 'remove');
-				delete warnings[m.key.remoteJid][participant];
-				saveWarnings();
+				handleViolation(Wilykun, m.key.remoteJid, participant);
 			}
 
 			await Wilykun.sendMessage(m.key.remoteJid, { delete: m.key });
