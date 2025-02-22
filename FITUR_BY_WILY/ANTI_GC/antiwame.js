@@ -139,7 +139,7 @@ export async function handleAntiWaMeLink(Wilykun, m, store) {
 				ppUrl = 'https://example.com/default-profile-picture.jpg'; // Gambar default jika tidak ada
 			}
 
-			await Wilykun.readMessages([m.key]); // Mark the message as read
+			await Wilykun.readMessages([m.key]); // Tandai pesan sebagai telah dibaca
 
 			const warningCount = warnings[m.key.remoteJid][participant];
 			const warningMessage = warningMessages[warningCount - 1];
