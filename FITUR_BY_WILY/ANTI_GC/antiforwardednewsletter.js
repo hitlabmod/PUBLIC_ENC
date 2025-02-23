@@ -18,16 +18,16 @@ export async function handleAntiForwardedNewsletter(Wilykun, m, store) {
 			return;
 		}
 
-		let ppUrl;
+		let ppuser;
 		try {
-			ppUrl = await Wilykun.profilePictureUrl(participant, 'image');
+			ppuser = await Wilykun.profilePictureUrl(participant, 'image');
 		} catch {
-			ppUrl = 'https://example.com/default-profile-picture.jpg'; // Gambar default jika tidak ada
+			ppuser = 'https://files.catbox.moe/nuz3yc.jpeg'; // Gambar default jika tidak ada
 		}
 
 		await Wilykun.readMessages([m.key]); // Mark the message as read
 		await Wilykun.sendMessage(m.key.remoteJid, { 
-			image: { url: ppUrl },
+			image: { url: ppuser },
 			caption: `Halo @${displayName}, pesan yang diteruskan terdeteksi dan telah dihapus. Mohon untuk tidak membagikan pesan tersebut lagi 🚫`,
 			contextInfo: {
 				mentionedJid: [participant, groupOwner],

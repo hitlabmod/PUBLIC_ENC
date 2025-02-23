@@ -78,16 +78,17 @@ async function tagUser(Wilykun, groupId, user) {
     const offenderCount = Object.keys(warnings[groupId]).length;
     const topOffenders = getTopOffenders(groupId);
 
-    let ppUrl;
+    // Get Profile Picture User
+    let ppuser;
     try {
-        ppUrl = await Wilykun.profilePictureUrl(user, 'image');
+        ppuser = await Wilykun.profilePictureUrl(user, 'image');
     } catch {
-        ppUrl = 'https://example.com/default-profile-picture.jpg'; // Gambar default jika tidak ada
+        ppuser = 'https://files.catbox.moe/nuz3yc.jpeg'; // Gambar default jika tidak ada
     }
 
     await Wilykun.sendMessage(groupId, {
-        image: { url: ppUrl },
-        caption: `────────────────────\nHalo @${user.split('@')[0]}, Waduh, fitur auto kick dimatikan. Kamu aman dan tidak di-kick. Pelanggaran kamu dihapus jadi 0.\n────────────────────\n*Nama Grup*: ${groupName}\n*Daftar Pelanggar: (${offenderCount} orang)*\n${topOffenders}\n────────────────────`,
+        image: { url: ppuser },
+        caption: `────────────────────\n👋 Halo @${user.split('@')[0]}, ⚠️ Waduh, fitur auto kick dimatikan. Kamu aman dan tidak di-kick. Pelanggaran kamu dihapus jadi 0.\n────────────────────\n*Nama Grup*: ${groupName}\n*Daftar Pelanggar: (${offenderCount} orang)*\n${topOffenders}\n────────────────────`,
         contextInfo: {
             mentionedJid: [user, ...Object.keys(warnings[groupId])],
             forwardingScore: 100,
@@ -137,11 +138,12 @@ export async function handleAntiWaMeLink(Wilykun, m, store) {
 			warnings[m.key.remoteJid][participant] += 1;
 			saveWarnings();
 
-			let ppUrl;
+			// Get Profile Picture User
+			let ppuser;
 			try {
-				ppUrl = await Wilykun.profilePictureUrl(participant, 'image');
+				ppuser = await Wilykun.profilePictureUrl(participant, 'image');
 			} catch {
-				ppUrl = 'https://example.com/default-profile-picture.jpg'; // Gambar default jika tidak ada
+				ppuser = 'https://files.catbox.moe/nuz3yc.jpeg'; // Gambar default jika tidak ada
 			}
 
 			await Wilykun.readMessages([m.key]); // Tandai pesan sebagai telah dibaca
@@ -153,8 +155,8 @@ export async function handleAntiWaMeLink(Wilykun, m, store) {
 
 			if (warningCount < 10) {
 				await Wilykun.sendMessage(m.key.remoteJid, { 
-					image: { url: ppUrl },
-					caption: `────────────────────\nHalo @${participant.split('@')[0]}, ${warningMessage}\n────────────────────\n*Nama Grup*: ${groupName}\n*Daftar Pelanggar: (${offenderCount} orang)*\n${topOffenders}\n────────────────────`,
+					image: { url: ppuser },
+					caption: `────────────────────\n👋 Halo @${participant.split('@')[0]}, ${warningMessage}\n────────────────────\n*Nama Grup*: ${groupName}\n*Daftar Pelanggar: (${offenderCount} orang)*\n${topOffenders}\n────────────────────`,
 					contextInfo: {
 						mentionedJid: [participant, groupOwner, ...Object.keys(warnings[m.key.remoteJid])],
 						forwardingScore: 100,
@@ -169,8 +171,8 @@ export async function handleAntiWaMeLink(Wilykun, m, store) {
 			} else {
 				resetViolationCount(m.key.remoteJid, participant);
 				await Wilykun.sendMessage(m.key.remoteJid, { 
-					image: { url: ppUrl },
-					caption: `────────────────────\nHalo @${participant.split('@')[0]}, ${warningMessage}\n────────────────────\n*Nama Group*: ${groupName}\n*Daftar Pelanggar (${offenderCount} Orang):*\n${topOffenders}\n────────────────────`,
+					image: { url: ppuser },
+					caption: `────────────────────\n👋 Halo @${participant.split('@')[0]}, ${warningMessage}\n────────────────────\n*Nama Group*: ${groupName}\n*Daftar Pelanggar (${offenderCount} Orang):*\n${topOffenders}\n────────────────────`,
 					contextInfo: {
 						mentionedJid: [participant, groupOwner, ...Object.keys(warnings[m.key.remoteJid])],
 						forwardingScore: 100,

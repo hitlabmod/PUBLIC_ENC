@@ -48,16 +48,16 @@ export const handleWelcomeMessage = async (Wilykun, update) => {
 			for (let participant of participants) {
 				if (sentWelcomeMessages.has(participant)) continue; // Lewati jika pesan sudah dikirim
 
-				let ppUrl;
+				let ppuser;
 				try {
-					ppUrl = await Wilykun.profilePictureUrl(participant, 'image');
+					ppuser = await Wilykun.profilePictureUrl(participant, 'image');
 				} catch {
-					ppUrl = 'https://example.com/default-profile-picture.jpg'; // Gambar default jika tidak ada
+					ppuser = 'https://files.catbox.moe/nuz3yc.jpeg'; // Gambar default jika tidak ada
 				}
 
 				// Mengirim pesan selamat datang dengan gambar
 				const welcomeMessage = {
-					image: { url: ppUrl },
+					image: { url: ppuser },
 					caption: `Selamat datang @${participant.split('@')[0]} di grup kami! Semoga betah dan jangan lupa baca peraturan grup ya! 😊
 ─
 𝗦𝗲𝗯𝗲𝗹𝘂𝗺 𝗶𝘁𝘂 𝗽𝗲𝗿𝗸𝗲𝗻𝗮𝗹𝗸𝗮𝗻 𝗱𝘂𝗹𝘂 𝗸𝗮𝗺𝘂 : 

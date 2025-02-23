@@ -48,16 +48,16 @@ export const handleGoodbyeMessage = async (Wilykun, update) => {
 			const randomWiseWord = wiseWords[Math.floor(Math.random() * wiseWords.length)];
 
 			for (let participant of participants) {
-				let ppUrl;
+				let ppuser;
 				try {
-					ppUrl = await Wilykun.profilePictureUrl(participant, 'image');
+					ppuser = await Wilykun.profilePictureUrl(participant, 'image');
 				} catch {
-					ppUrl = 'https://example.com/default-profile-picture.jpg'; // Gambar default jika tidak ada
+					ppuser = 'https://files.catbox.moe/nuz3yc.jpeg'; // Gambar default jika tidak ada
 				}
 
 				// Mengirim pesan selamat tinggal dengan gambar
 				const goodbyeMessage = {
-					image: { url: ppUrl },
+					image: { url: ppuser },
 					caption: `Selamat tinggal @${participant.split('@')[0]}! Terima kasih telah menjadi bagian dari grup ini. Semoga sukses di tempat yang baru! 👋
 ─
 *{ Kata-kata dari saya, untuk orang yang meninggalkan group ini }*
