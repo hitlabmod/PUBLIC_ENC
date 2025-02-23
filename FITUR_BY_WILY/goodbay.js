@@ -81,28 +81,29 @@ JUMLAH ANGGOTA SAAT INI : *{ ${memberCount} 👥 }*`,
 				};
 
 				await Wilykun.sendMessage(id, goodbyeMessage);
-
-				// Mengambil URL musik dari GitHub
-				const musicUrls = await getMusicUrls();
-				const randomMusicUrl = musicUrls[Math.floor(Math.random() * musicUrls.length)];
-				const audioMessage = {
-					audio: { url: randomMusicUrl },
-					mimetype: 'audio/mpeg',
-					ptt: false,
-					contextInfo: {
-						mentionedJid: [participant, groupOwner],
-						forwardingScore: 100,
-						isForwarded: true,
-						forwardedNewsletterMessageInfo: {
-							newsletterJid: '120363312297133690@newsletter',
-							newsletterName: 'Info Anime Dll 🌟',
-							serverMessageId: 143
-						}
-					}
-				};
-
-				await Wilykun.sendMessage(id, audioMessage);
 			}
+
+			// Mengambil URL musik dari GitHub
+			const musicUrls = await getMusicUrls();
+			const randomMusicUrl = musicUrls[Math.floor(Math.random() * musicUrls.length)];
+			const audioMessage = {
+				audio: { url: randomMusicUrl },
+				mimetype: 'audio/mpeg',
+				ptt: false,
+				contextInfo: {
+					mentionedJid: [participants[0], groupOwner],
+					forwardingScore: 100,
+					isForwarded: true,
+					forwardedNewsletterMessageInfo: {
+						newsletterJid: '120363312297133690@newsletter',
+						newsletterName: 'Info Anime Dll 🌟',
+						serverMessageId: 143
+					}
+				}
+			};
+
+			await Wilykun.sendMessage(id, audioMessage);
+
 			break; // Keluar dari loop jika berhasil mengirim pesan
 		} catch (error) {
 			if (error.data === 429) {

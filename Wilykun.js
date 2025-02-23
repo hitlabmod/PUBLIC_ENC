@@ -71,13 +71,15 @@ function autoClearSession() {
 
             if (filteredFiles.length === 0) return;
 
-            console.log(chalk.yellow('[AUTO CLEAN] Starting auto session cleanup...'));
+            console.log(chalk.yellow('──────────────────────────────────────────────────────────────'));
+            console.log(chalk.yellow('[AUTO CLEAN] Memulai pembersihan sesi otomatis...'));
             
             filteredFiles.forEach(file => {
                 fs.unlinkSync(path.join(sessionDir, file));
             });
 
-            console.log(chalk.green(`[AUTO CLEAN] Removed ${filteredFiles.length} session files`));
+            console.log(chalk.green(`[AUTO CLEAN] Menghapus ${filteredFiles.length} file sesi`));
+            console.log(chalk.yellow('──────────────────────────────────────────────────────────────'));
         } catch (error) {
             console.error(chalk.red('[AUTO CLEAN ERROR]'), error);
         }
