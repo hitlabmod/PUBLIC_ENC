@@ -71,15 +71,22 @@ function autoClearSession() {
 
             if (filteredFiles.length === 0) return;
 
-            console.log(chalk.yellow('[AUTO CLEAN] Starting auto session cleanup...'));
+            console.log(chalk.yellow('======================================================'));
+            console.log(chalk.yellow('🧹 [AUTO CLEAN] Memulai pembersihan sesi otomatis...'));
+            console.log(chalk.yellow('======================================================'));
             
             filteredFiles.forEach(file => {
                 fs.unlinkSync(path.join(sessionDir, file));
             });
 
-            console.log(chalk.green(`[AUTO CLEAN] Removed ${filteredFiles.length} session files`));
+            console.log(chalk.green('======================================================'));
+            console.log(chalk.green(`🗑️ [AUTO CLEAN] Menghapus ${filteredFiles.length} file sesi`));
+            console.log(chalk.green('✅ Berhasil Menghapus sesi'));
+            console.log(chalk.green('======================================================'));
         } catch (error) {
-            console.error(chalk.red('[AUTO CLEAN ERROR]'), error);
+            console.error(chalk.red('======================================================'));
+            console.error(chalk.red('❌ [AUTO CLEAN ERROR] Terjadi kesalahan saat pembersihan sesi otomatis'));
+            console.error(chalk.red('======================================================'), error);
         }
     }, clearInterval);
 }
@@ -97,7 +104,8 @@ const rl = readline.createInterface({
 async function getPairingNumber() {
 	return new Promise((resolve) => {
 		console.log(chalk.blue.bold('\n==================== PAIRING SETUP ===================='));
-		rl.question(chalk.yellow('📱 Masukkan nomor WhatsApp Anda: '), (answer) => {
+		console.log(chalk.yellow('📱 Masukkan nomor WhatsApp Anda: ')); // Tambahkan log ini
+		rl.question(chalk.yellow('📱 Nomer Whatsappmu '), (answer) => {
 			console.log(chalk.blue.bold('======================================================\n'));
 			resolve(answer);
 		});
@@ -173,6 +181,15 @@ const startSock = async () => {
 				console.log(chalk.yellow('📞  Contoh nomor yang valid: 6281234567890'));
 			}
 		}
+
+		// Buat folder sesi hanya setelah nomor yang valid dimasukkan
+		const sessionDir = path.join(process.cwd(), process.env.SESSION_DIR);
+		if (fs.existsSync(sessionDir)) {
+			fs.rmSync(sessionDir, { recursive: true, force: true });
+			console.log(chalk.green(`📁 Folder sesi dihapus di: ${sessionDir}`));
+		}
+		fs.mkdirSync(sessionDir, { recursive: true });
+		console.log(chalk.green(`📁 Folder sesi dibuat di: ${sessionDir}`));
 
 		try {
 			await delay(3000);
