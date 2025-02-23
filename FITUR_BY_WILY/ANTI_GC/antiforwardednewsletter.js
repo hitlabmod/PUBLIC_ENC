@@ -4,8 +4,9 @@ dotenv.config(); // Load .env file
 
 export async function handleAntiForwardedNewsletter(Wilykun, m, store) {
 	if (process.env.ENABLE_ANTI_FORWARDED_NEWSLETTER === 'true' && m.key.remoteJid.endsWith('@g.us') && m.message?.extendedTextMessage?.contextInfo?.forwardingScore > 0 && !m.key.fromMe) {
+		const contacts = store.contacts; // Gunakan store.contacts
 		const participant = m.key.participant || m.key.remoteJid;
-		const contact = store.contacts[participant] || {};
+		const contact = contacts[participant] || {};
 		const displayName = contact.notify || contact.vname || contact.name || participant.split('@')[0];
 		const groupMetadata = await Wilykun.groupMetadata(m.key.remoteJid);
 		const groupOwner = groupMetadata.owner;
