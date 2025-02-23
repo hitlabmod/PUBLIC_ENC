@@ -17,6 +17,7 @@ import os from 'os';
 import { exec } from 'child_process';
 import chalk from 'chalk'; // Pastikan chalk diimpor
 import path from 'path'; // Pastikan path diimpor
+import readline from 'readline'; // Tambahkan impor readline
 // Hapus impor fungsi dari helpers.js
 // import { handleConnectionUpdate } from './ALAMAK/helpers.js'; // Impor fungsi handleConnectionUpdate
 import { handleDisconnectReason, handleGroupParticipantsUpdate, handleHalloMessage } from './ALAMAK/case.js'; // Impor fungsi handleDisconnectReason, handleGroupParticipantsUpdate, dan handleHalloMessage
@@ -88,6 +89,28 @@ if (process.env.AUTO_CLEAR_SESSION_ENABLED === 'true') {
     autoClearSession();
 }
 
+const rl = readline.createInterface({
+	input: process.stdin,
+	output: process.stdout
+});
+
+async function getPairingNumber() {
+	return new Promise((resolve) => {
+		console.log(chalk.blue.bold('\n==================== PAIRING SETUP ===================='));
+		rl.question(chalk.yellow('📱 Masukkan nomor WhatsApp Anda: '), (answer) => {
+			console.log(chalk.blue.bold('======================================================\n'));
+			resolve(answer);
+		});
+	});
+}
+
+async function validatePhoneNumber(phoneNumber) {
+	// Logika validasi nomor telepon bisa ditambahkan di sini
+	// Misalnya, memeriksa apakah nomor hanya berisi angka dan panjangnya sesuai
+	const isValid = /^\d+$/.test(phoneNumber) && phoneNumber.length >= 10 && phoneNumber.length <= 15;
+	return isValid;
+}
+
 const startSock = async () => {
 	const { state, saveCreds } = await useMultiFileAuthState(path.join(process.cwd(), process.env.SESSION_DIR));
 	const { version, isLatest } = await fetchLatestBaileysVersion();
@@ -100,7 +123,7 @@ const startSock = async () => {
 	const Wilykun = makeWASocket.default({
 		version,
 		logger,
-		printQRInTerminal: !usePairingCode,
+		printQRInTerminal: false, // Ubah menjadi false agar default ke pairing code
 		auth: {
 			creds: state.creds,
 			keys: makeCacheableSignalKeyStore(state.keys, logger),
@@ -133,15 +156,39 @@ const startSock = async () => {
 	await Client({ Wilykun, store });
 
 	// login dengan pairing
-	if (usePairingCode && !Wilykun.authState.creds.registered) {
-		try {
-			let phoneNumber = usePairingCode.replace(/[^0-9]/g, '');
+	if (!Wilykun.authState.creds.registered) {
+		let phoneNumber;
+		let isValid = false;
 
+		while (!isValid) {
+			phoneNumber = await getPairingNumber();
+			isValid = await validatePhoneNumber(phoneNumber);
+
+			if (!isValid) {
+				console.log(chalk.red('❌ Nomor tidak valid. Silakan masukkan nomor yang benar.'));
+				console.log(chalk.yellow('📋  Cara memasukkan nomor yang valid:'));
+				console.log(chalk.yellow('1️⃣  Pastikan nomor hanya berisi angka.'));
+				console.log(chalk.yellow('2️⃣  Jangan sertakan karakter selain angka (misalnya, tanda plus atau spasi).'));
+				console.log(chalk.yellow('3️⃣  Panjang nomor harus antara 10 hingga 15 digit.'));
+				console.log(chalk.yellow('📞  Contoh nomor yang valid: 6281234567890'));
+			}
+		}
+
+		try {
 			await delay(3000);
 			let code = await Wilykun.requestPairingCode(phoneNumber);
-			console.log(`\x1b[32m${code?.match(/.{1,4}/g)?.join('-') || code}\x1b[39m`);
+			console.log(chalk.green.bold('\n==================== PAIRING CODE ===================='));
+			console.log(chalk.cyan.bold(`${code?.match(/.{1,4}/g)?.join('-') || code}`));
+			console.log(chalk.green.bold('======================================================\n'));
+			console.log(chalk.yellow('🔗 Gunakan kode di atas untuk menghubungkan bot dengan WhatsApp Anda.'));
+			console.log(chalk.yellow('📋  Cara memasukkan pairing code di WhatsApp terbaru:'));
+			console.log(chalk.yellow('1️⃣  Buka aplikasi WhatsApp di ponsel Anda.'));
+			console.log(chalk.yellow('2️⃣  Ketuk ikon tiga titik di pojok kanan atas untuk membuka menu.'));
+			console.log(chalk.yellow('3️⃣  Pilih "Perangkat Tertaut" dari menu.'));
+			console.log(chalk.yellow('4️⃣  Ketuk "Tautkan Perangkat" dan masukkan pairing code yang ditampilkan di atas.'));
+			console.log(chalk.yellow('5️⃣  Ikuti instruksi di layar untuk menyelesaikan proses pairing.'));
 		} catch {
-			console.error('Gagal mendapatkan kode pairing');
+			console.error(chalk.red('❌ Gagal mendapatkan kode pairing'));
 			process.exit(1);
 		}
 	}
@@ -154,7 +201,9 @@ const startSock = async () => {
 			const error = lastDisconnect.error;
 			const statusCode = error instanceof Boom ? error.output.statusCode : null;
 			const shouldReconnect = statusCode !== DisconnectReason.loggedOut && statusCode !== 401;
-			console.log('Connection closed due to', error, ', reconnecting', shouldReconnect);
+			if (statusCode !== 515) {
+				console.log('Connection closed due to', error, ', reconnecting', shouldReconnect);
+			}
 			// Coba untuk memulai ulang socket jika tidak logout atau otentikasi gagal
 			if (shouldReconnect) {
 				startSock();
@@ -177,8 +226,7 @@ const startSock = async () => {
 					// Tambahkan tindakan untuk menangani logout
 					// Misalnya, Anda dapat menghapus sesi yang ada dan meminta login ulang
 				} else if (statusCode === 515) {
-					console.log('Stream Errored (restart required). Restarting...');
-					// Restart setelah 5 detik
+					// Restart setelah 5 detik tanpa menampilkan pesan error
 					setTimeout(() => startSock(), 5000);
 				}
 			}
