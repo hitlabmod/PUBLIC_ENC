@@ -58,7 +58,12 @@ async function handleViolation(Wilykun, groupId, user) {
     const autoKickEnabled = process.env.AUTO_KICK_ENABLED === 'true';
 
     if (autoKickEnabled) {
-        // ...existing auto-kick logic...
+        // Logika auto kick
+        const groupMetadata = await Wilykun.groupMetadata(groupId);
+        const groupName = groupMetadata.subject;
+
+        await Wilykun.groupParticipantsUpdate(groupId, [user], 'remove');
+        console.log(`User ${user} telah dikeluarkan dari grup ${groupName} karena melanggar aturan.`);
     } else {
         // Tandai pengguna dan atur ulang jumlah pelanggaran
         resetViolationCount(groupId, user);

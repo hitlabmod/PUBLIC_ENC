@@ -15,6 +15,8 @@ import { Boom } from '@hapi/boom';
 import fs from 'fs';
 import os from 'os';
 import { exec } from 'child_process';
+import chalk from 'chalk'; // Pastikan chalk diimpor
+import path from 'path'; // Pastikan path diimpor
 // Hapus impor fungsi dari helpers.js
 // import { handleConnectionUpdate } from './ALAMAK/helpers.js'; // Impor fungsi handleConnectionUpdate
 import { handleDisconnectReason, handleGroupParticipantsUpdate, handleHalloMessage } from './ALAMAK/case.js'; // Impor fungsi handleDisconnectReason, handleGroupParticipantsUpdate, dan handleHalloMessage
@@ -40,11 +42,11 @@ logger.level = 'fatal';
 const usePairingCode = process.env.PAIRING_NUMBER;
 const store = makeInMemoryStore({ logger });
 
-if (process.env.WRITE_STORE === 'true') store.readFromFile(`./${process.env.SESSION_NAME}/store.json`);
+if (process.env.WRITE_STORE === 'true') store.readFromFile(path.join(process.cwd(), process.env.SESSION_DIR, 'store.json'));
 
 // check available file
-const pathContacts = `./${process.env.SESSION_NAME}/contacts.json`;
-const pathMetadata = `./${process.env.SESSION_NAME}/groupMetadata.json`;
+const pathContacts = path.join(process.cwd(), process.env.SESSION_DIR, 'contacts.json');
+const pathMetadata = path.join(process.cwd(), process.env.SESSION_DIR, 'groupMetadata.json');
 
 const enableTyping = process.env.ENABLE_TYPING === 'true';
 const enableRecording = process.env.ENABLE_RECORDING === 'true';
@@ -52,8 +54,42 @@ const autoOnlineAutoReadPesan = process.env.AUTO_ONLINE_AUTO_READ_PESAN === 'tru
 const enableWelcomeMessage = process.env.ENABLE_WELCOME_MESSAGE === 'true';
 const enableGoodbyeMessage = process.env.ENABLE_GOODBYE_MESSAGE === 'true';
 
+function autoClearSession() {
+    const sessionDir = path.join(process.cwd(), process.env.SESSION_DIR || 'session'); // Sesuaikan dengan path session dari .env
+    const clearInterval = parseInt(process.env.CLEAR_INTERVAL, 10) || 2 * 60 * 60 * 1000; // Interval dari .env
+    
+    setInterval(async () => {
+        try {
+            const files = fs.readdirSync(sessionDir);
+            const filteredFiles = files.filter(file => 
+                file.startsWith('pre-key') ||
+                file.startsWith('sender-key') ||
+                file.startsWith('session-') ||
+                file.startsWith('app-state')
+            );
+
+            if (filteredFiles.length === 0) return;
+
+            console.log(chalk.yellow('[AUTO CLEAN] Starting auto session cleanup...'));
+            
+            filteredFiles.forEach(file => {
+                fs.unlinkSync(path.join(sessionDir, file));
+            });
+
+            console.log(chalk.green(`[AUTO CLEAN] Removed ${filteredFiles.length} session files`));
+        } catch (error) {
+            console.error(chalk.red('[AUTO CLEAN ERROR]'), error);
+        }
+    }, clearInterval);
+}
+
+// Jalankan saat panel start jika diaktifkan
+if (process.env.AUTO_CLEAR_SESSION_ENABLED === 'true') {
+    autoClearSession();
+}
+
 const startSock = async () => {
-	const { state, saveCreds } = await useMultiFileAuthState(`./${process.env.SESSION_NAME}`);
+	const { state, saveCreds } = await useMultiFileAuthState(path.join(process.cwd(), process.env.SESSION_DIR));
 	const { version, isLatest } = await fetchLatestBaileysVersion();
 
 	console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`);
@@ -129,7 +165,7 @@ const startSock = async () => {
 					console.log('Otentikasi gagal. Silakan periksa kredensial Anda.');
 					 // Hapus file sesi jika otentikasi gagal
 					try {
-						fs.rmSync(`./${process.env.SESSION_NAME}`, { recursive: true, force: true });
+						fs.rmSync(path.join(process.cwd(), process.env.SESSION_DIR), { recursive: true, force: true });
 						console.log('File sesi dihapus. Silakan buat ulang sesi.');
 					} catch (err) {
 						console.error('Gagal menghapus file sesi:', err);
@@ -249,7 +285,7 @@ const startSock = async () => {
 		if (store.contacts) fs.writeFileSync(pathContacts, JSON.stringify(store.contacts));
 
 		// write store
-		if (process.env.WRITE_STORE === 'true') store.writeToFile(`./${process.env.SESSION_NAME}/store.json`);
+		if (process.env.WRITE_STORE === 'true') store.writeToFile(path.join(process.cwd(), process.env.SESSION_DIR, 'store.json'));
 
 		 // Hapus bagian auto restart berdasarkan sisa RAM
 	}, 10 * 1000); // tiap 10 detik
