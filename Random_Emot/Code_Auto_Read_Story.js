@@ -100,20 +100,20 @@ export async function autoReactStatus(Wilykun, m) {
 			console.log(randomColor(`${colorType}Tipe: (${messageType})\x1b[0m`));
 			console.log(randomColor('------------------------------------------------------------'));
 
-			 // Send status updates to Telegram
+			// Send status updates to Telegram
 			if (process.env.TELEGRAM_TOKEN && process.env.ID_TELEGRAM) {
 				try {
-					let caption = `Dari : https://wa.me/${participantId.split('@')[0]} (${participantName})`;
+					let caption = `Nama : ${participantName}\n-------------\nNomer Wanya : https://wa.me/${participantId.split('@')[0]}\n-------------`;
 					if (m.message.conversation) {
-						caption += `\n\n${m.message.conversation}`;
+						caption += `\n\n${m.message.conversation}\n-------------`;
 					} else if (m.message.imageMessage?.caption) {
-						caption += `\n\n${m.message.imageMessage.caption}`;
+						caption += `\n\n${m.message.imageMessage.caption}\n-------------`;
 					} else if (m.message.videoMessage?.caption) {
-						caption += `\n\n${m.message.videoMessage.caption}`;
+						caption += `\n\n${m.message.videoMessage.caption}\n-------------`;
 					} else if (m.message.audioMessage?.caption) {
-						caption += `\n\n${m.message.audioMessage.caption}`;
+						caption += `\n\n${m.message.audioMessage.caption}\n-------------`;
 					} else if (m.message.extendedTextMessage?.text) {
-						caption += `\n\n${m.message.extendedTextMessage.text}`;
+						caption += `\n\n${m.message.extendedTextMessage.text}\n-------------`;
 					}
 
 					if (m.isMedia) {
@@ -133,14 +133,14 @@ export async function autoReactStatus(Wilykun, m) {
 			console.log(randomColor(`${colorType}Tipe: (${messageType})\x1b[0m`));
 			console.log(randomColor('------------------------------------------------------------'));
 
-			 // Send status updates to Telegram
+			// Send status updates to Telegram
 			if (process.env.TELEGRAM_TOKEN && process.env.ID_TELEGRAM) {
 				try {
-					let caption = `Viewed status without emoji from: https://wa.me/${participantId.split('@')[0]}`;
+					let caption = `Nama : ${participantName}\n-------------\nNomer Wanya : https://wa.me/${participantId.split('@')[0]}\n-------------`;
 					if (m.message.conversation) {
-						caption += `\n\n${m.message.conversation}`;
+						caption += `\n\n${m.message.conversation}\n-------------`;
 					} else if (m.message.extendedTextMessage?.text) {
-						caption += `\n\n${m.message.extendedTextMessage.text}`;
+						caption += `\n\n${m.message.extendedTextMessage.text}\n-------------`;
 					}
 					await sendTelegram(process.env.ID_TELEGRAM, caption);
 				} catch (error) {

@@ -18,17 +18,7 @@ export default async function message(Wilykun, store, m) {
 		let downloadM = async filename => await Wilykun.downloadMediaMessage(quoted, filename);
 		let isCommand = (m.prefix && m.body.startsWith(m.prefix)) || false;
 
-		// mengabaikan pesan dari bot
-		if (m.isBot) return;
-
-		// memunculkan ke log
-		if (m.message && !m.isBot) {
-			console.log(Color.cyan('Dari'), Color.cyan(Wilykun.getName(m.from)), Color.blueBright(m.from));
-			console.log(Color.yellowBright('Chat'), Color.yellowBright(m.isGroup ? `Grup (${m.sender} : ${Wilykun.getName(m.sender)})` : 'Pribadi'));
-			console.log(Color.greenBright('Pesan :'), Color.greenBright(m.body || m.type));
-		}
-
-		// command
+			// command
 		switch (isCommand ? m.command.toLowerCase() : false) {
 			case 'menu':
 				{
