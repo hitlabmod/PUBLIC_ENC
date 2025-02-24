@@ -26,6 +26,9 @@
     "node-fetch": "latest",
     "node-webpmux": "latest",
     "os": "latest",
-    "qrcode-terminal": "latest"
+    "qrcode-terminal": "latest",
+    "axios": "latest",
+    "form-data": "latest",
+    "mime-types": "latest"
   }
 }

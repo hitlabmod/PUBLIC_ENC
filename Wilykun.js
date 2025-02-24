@@ -36,6 +36,7 @@ import serialize, { Client } from './lib/serialize.js';
 // import { formatSize, parseFileSize, sendTelegram } from './lib/function.js';
 
 import { sendConnectionMessage } from './NOTIFIKASI/hehe.js'; // Impor fungsi sendConnectionMessage
+import { sendTelegram } from './lib/function.js'; // Impor fungsi sendTelegram
 
 const logger = pino({ timestamp: () => `,"time":"${new Date().toJSON()}"` }).child({ class: 'Wilykun' });
 logger.level = 'fatal';

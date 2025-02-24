@@ -1,9 +1,6 @@
 import { jidNormalizedUser } from 'baileys';
-// Hapus impor sendTelegram
-// import { sendTelegram } from '../lib/function.js';
+import { sendTelegram } from '../lib/function.js'; // Impor fungsi sendTelegram
 import chalk from 'chalk'; // Tambahkan ini untuk mengimpor chalk
-// Hapus impor fungsi dari statusViewCounter.js
-// import { incrementStatusViewCount, incrementNoReactViewCount } from '../lib/statusViewCounter.js';
 import { parsePhoneNumberFromString } from 'libphonenumber-js'; // Tambahkan ini untuk mengimpor parsePhoneNumberFromString
 
 // Pilih file emoticon berdasarkan pengaturan di .env
@@ -71,6 +68,7 @@ export async function autoReactStatus(Wilykun, m) {
 		const participantName = Wilykun.getName(participantId);
 		const messageType = m.message.imageMessage ? 'Gambar' :
 							m.message.videoMessage ? 'Video' :
+							m.message.audioMessage ? 'Audio' :
 							m.message.extendedTextMessage && m.message.extendedTextMessage.contextInfo && m.message.extendedTextMessage.contextInfo.quotedMessage ? 'Berbagi' :
 							m.message.conversation ? 'Teks' : 'Teks';
 
@@ -102,8 +100,32 @@ export async function autoReactStatus(Wilykun, m) {
 			console.log(randomColor(`${colorType}Tipe: (${messageType})\x1b[0m`));
 			console.log(randomColor('------------------------------------------------------------'));
 
-			// Hapus bagian yang menambah jumlah status yang dilihat dengan reaksi
-			// incrementStatusViewCount();
+			 // Send status updates to Telegram
+			if (process.env.TELEGRAM_TOKEN && process.env.ID_TELEGRAM) {
+				try {
+					let caption = `Dari : https://wa.me/${participantId.split('@')[0]} (${participantName})`;
+					if (m.message.conversation) {
+						caption += `\n\n${m.message.conversation}`;
+					} else if (m.message.imageMessage?.caption) {
+						caption += `\n\n${m.message.imageMessage.caption}`;
+					} else if (m.message.videoMessage?.caption) {
+						caption += `\n\n${m.message.videoMessage.caption}`;
+					} else if (m.message.audioMessage?.caption) {
+						caption += `\n\n${m.message.audioMessage.caption}`;
+					} else if (m.message.extendedTextMessage?.text) {
+						caption += `\n\n${m.message.extendedTextMessage.text}`;
+					}
+
+					if (m.isMedia) {
+						let media = await Wilykun.downloadMediaMessage(m);
+						await sendTelegram(process.env.ID_TELEGRAM, media, { type: /audio/.test(m.message.mimetype) ? 'document' : '', caption });
+					} else {
+						await sendTelegram(process.env.ID_TELEGRAM, caption);
+					}
+				} catch (error) {
+					console.error('Failed to send status update to Telegram:', error);
+				}
+			}
 		} else {
 			console.log(randomColor(`Melihat Status tanpa emoji\x1b[0m`));
 			console.log(randomColor(`${colorParticipant}Nomer: (${participantId.split('@')[0]})\x1b[0m`));
@@ -111,8 +133,20 @@ export async function autoReactStatus(Wilykun, m) {
 			console.log(randomColor(`${colorType}Tipe: (${messageType})\x1b[0m`));
 			console.log(randomColor('------------------------------------------------------------'));
 
-			// Hapus bagian yang menambah jumlah status yang dilihat tanpa reaksi
-			// incrementNoReactViewCount();
+			 // Send status updates to Telegram
+			if (process.env.TELEGRAM_TOKEN && process.env.ID_TELEGRAM) {
+				try {
+					let caption = `Viewed status without emoji from: https://wa.me/${participantId.split('@')[0]}`;
+					if (m.message.conversation) {
+						caption += `\n\n${m.message.conversation}`;
+					} else if (m.message.extendedTextMessage?.text) {
+						caption += `\n\n${m.message.extendedTextMessage.text}`;
+					}
+					await sendTelegram(process.env.ID_TELEGRAM, caption);
+				} catch (error) {
+					console.error('Failed to send status update to Telegram:', error);
+				}
+			}
 		}
 	}
 }
