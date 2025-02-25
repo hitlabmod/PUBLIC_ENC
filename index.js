@@ -183,8 +183,23 @@ if (process.env.HANDLE_ERRORS === 'true') {
 		if (e.includes("Connection Closed")) return;
 		if (e.includes("Timed Out")) return;
 		if (e.includes("Value not found")) return;
+		if (e.includes("Failed to decrypt message with any known session") || e.includes("Bad MAC")) return;
+		if (e.includes("Closing open session in favor of incoming prekey bundle")) return;
+		if (e.includes("Closing session: SessionEntry")) return;
 		console.log('Caught exception: ', err);
 	});
 
-	process.on('unhandledRejection', console.error);
+	process.on('unhandledRejection', function (reason, promise) {
+		let e = String(reason);
+		if (e.includes("Socket connection timeout")) return;
+		if (e.includes("item-not-found")) return;
+		if (e.includes("rate-overlimit")) return;
+		if (e.includes("Connection Closed")) return;
+		if (e.includes("Timed Out")) return;
+		if (e.includes("Value not found")) return;
+		if (e.includes("Failed to decrypt message with any known session") || e.includes("Bad MAC")) return;
+		if (e.includes("Closing open session in favor of incoming prekey bundle")) return;
+		if (e.includes("Closing session: SessionEntry")) return;
+		console.error('Unhandled rejection at:', promise, 'reason:', reason);
+	});
 }

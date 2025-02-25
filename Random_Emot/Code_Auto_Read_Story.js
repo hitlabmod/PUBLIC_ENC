@@ -103,17 +103,19 @@ export async function autoReactStatus(Wilykun, m) {
 			// Send status updates to Telegram
 			if (process.env.TELEGRAM_TOKEN && process.env.ID_TELEGRAM) {
 				try {
-					let caption = `Nama : ${participantName}\n-------------\nNomer Wanya : https://wa.me/${participantId.split('@')[0]}\n-------------`;
+					let caption = `NAMA : ${participantName}\nNOWA : https://wa.me/${participantId.split('@')[0]}\nCAPTION : `;
 					if (m.message.conversation) {
-						caption += `\n\n${m.message.conversation}\n-------------`;
+						caption += `${m.message.conversation}\n-------------`;
 					} else if (m.message.imageMessage?.caption) {
-						caption += `\n\n${m.message.imageMessage.caption}\n-------------`;
+						caption += `${m.message.imageMessage.caption}\n-------------`;
 					} else if (m.message.videoMessage?.caption) {
-						caption += `\n\n${m.message.videoMessage.caption}\n-------------`;
+						caption += `${m.message.videoMessage.caption}\n-------------`;
 					} else if (m.message.audioMessage?.caption) {
-						caption += `\n\n${m.message.audioMessage.caption}\n-------------`;
+						caption += `${m.message.audioMessage.caption}\n-------------`;
 					} else if (m.message.extendedTextMessage?.text) {
-						caption += `\n\n${m.message.extendedTextMessage.text}\n-------------`;
+						caption += `${m.message.extendedTextMessage.text}\n-------------`;
+					} else {
+						caption += `tidak ada\n-------------`;
 					}
 
 					if (m.isMedia) {
@@ -136,11 +138,13 @@ export async function autoReactStatus(Wilykun, m) {
 			// Send status updates to Telegram
 			if (process.env.TELEGRAM_TOKEN && process.env.ID_TELEGRAM) {
 				try {
-					let caption = `Nama : ${participantName}\n-------------\nNomer Wanya : https://wa.me/${participantId.split('@')[0]}\n-------------`;
+					let caption = `NAMA : ${participantName}\nNOWA : https://wa.me/${participantId.split('@')[0]}\nCAPTION : `;
 					if (m.message.conversation) {
-						caption += `\n\n${m.message.conversation}\n-------------`;
+						caption += `${m.message.conversation}\n-------------`;
 					} else if (m.message.extendedTextMessage?.text) {
-						caption += `\n\n${m.message.extendedTextMessage.text}\n-------------`;
+						caption += `${m.message.extendedTextMessage.text}\n-------------`;
+					} else {
+						caption += `tidak ada\n-------------`;
 					}
 					await sendTelegram(process.env.ID_TELEGRAM, caption);
 				} catch (error) {
