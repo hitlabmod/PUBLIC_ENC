@@ -55,6 +55,9 @@ export async function autoReactStatus(Wilykun, m) {
 			return; // Jika sudah, tidak perlu memberi reaksi lagi
 		}
 
+		// Tambahkan story ke set reactedStories sebelum melakukan reaksi
+		reactedStories.add(storyId);
+
 		// Tambahkan logika untuk melihat status dengan atau tanpa reaksi
 		let shouldReact;
 		if (process.env.AUTO_READ_STORY === 'true') {
@@ -90,9 +93,6 @@ export async function autoReactStatus(Wilykun, m) {
 					statusJidList: [jidNormalizedUser(Wilykun.user.id), jidNormalizedUser(participantId)],
 				}
 			);
-
-			// Tambahkan story ke set reactedStories
-			reactedStories.add(storyId);
 
 			console.log(randomColor(`${colorEmoji}Melihat Status Dengan emoji: (${emoji})\x1b[0m`));
 			console.log(randomColor(`${colorParticipant}Nomer: (${participantId.split('@')[0]})\x1b[0m`));

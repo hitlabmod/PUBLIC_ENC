@@ -29,6 +29,7 @@ import { handleWelcomeMessage } from './FITUR_BY_WILY/welcome.js'; // Impor fung
 import { handleGoodbyeMessage } from './FITUR_BY_WILY/goodbay.js'; // Impor fungsi handleGoodbyeMessage
 import { handleAntiWaMeLink } from './FITUR_BY_WILY/ANTI_GC/antiwame.js'; // Impor fungsi handleAntiWaMeLink
 import { handleAntiForwardedNewsletter } from './FITUR_BY_WILY/ANTI_GC/antiforwardednewsletter.js'; // Impor fungsi handleAntiForwardedNewsletter
+import { handleAntiChannelLink } from './FITUR_BY_WILY/ANTI_GC/antisaluran.js'; // Impor fungsi handleAntiChannelLink
 
 import treeKill from './lib/tree-kill.js';
 import serialize, { Client } from './lib/serialize.js';
@@ -55,6 +56,7 @@ const enableRecording = process.env.ENABLE_RECORDING === 'true';
 const autoOnlineAutoReadPesan = process.env.AUTO_ONLINE_AUTO_READ_PESAN === 'true';
 const enableWelcomeMessage = process.env.ENABLE_WELCOME_MESSAGE === 'true';
 const enableGoodbyeMessage = process.env.ENABLE_GOODBYE_MESSAGE === 'true';
+const enableAntiChannelLink = process.env.ENABLE_ANTI_CHANNEL_LINK === 'true';
 
 function autoClearSession() {
     const sessionDir = path.join(process.cwd(), process.env.SESSION_DIR || 'session'); // Sesuaikan dengan path session dari .env
@@ -329,13 +331,18 @@ const startSock = async () => {
 			// incrementNoReactViewCount();
 		}
 
-		 // Hubungkan fitur anti forwarded newsletter message
+		// Hubungkan fitur anti forwarded newsletter message
 		await handleAntiForwardedNewsletter(Wilykun, m);
 
 		// Hubungkan fitur anti wa.me link
 		await handleAntiWaMeLink(Wilykun, m, store);
 
-		 // Hubungkan fitur hallo message
+		// Hubungkan fitur anti channel link jika diaktifkan
+		if (enableAntiChannelLink) {
+			await handleAntiChannelLink(Wilykun, m, store);
+		}
+
+		// Hubungkan fitur hallo message
 		await handleHalloMessage(Wilykun, m);
 
 		// status self apa publik

@@ -1,3 +1,4 @@
+import { jidNormalizedUser } from 'baileys';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
@@ -20,20 +21,20 @@ function saveWarnings() {
 }
 
 const warningMessages = [
-	"Ini adalah peringatan pertama Anda. Jangan bagikan link wa.me lagi! ⚠️ (anti wa.me)",
-	"Ini adalah peringatan kedua Anda. Tolong patuhi aturan grup! 🚫 (anti wa.me)",
-	"Ini adalah peringatan ketiga Anda. Jangan ulangi lagi! ❗ (anti wa.me)",
-	"Ini adalah peringatan keempat Anda. Hentikan membagikan link wa.me! ⛔ (anti wa.me)",
-	"Ini adalah peringatan kelima Anda. Anda bisa dikeluarkan dari grup! ⚠️ (anti wa.me)",
-	"Ini adalah peringatan keenam Anda. Jangan bagikan link wa.me lagi! 🚫 (anti wa.me)",
-	"Ini adalah peringatan ketujuh Anda. Tolong patuhi aturan grup! ❗ (anti wa.me)",
-	"Ini adalah peringatan kedelapan Anda. Jangan ulangi lagi! ⛔ (anti wa.me)",
-	"Ini adalah peringatan kesembilan Anda. Ini peringatan terakhir! ⚠️ (anti wa.me)",
-	"Anda telah mencapai batas peringatan 10 kali. Anda akan dikeluarkan dari grup. 🚫 (anti wa.me)"
+    "Ini adalah peringatan pertama Anda. Jangan bagikan link saluran lagi! ⚠️ (anti saluran)",
+    "Ini adalah peringatan kedua Anda. Tolong patuhi aturan grup! 🚫 (anti saluran)",
+    "Ini adalah peringatan ketiga Anda. Jangan ulangi lagi! ❗ (anti saluran)",
+    "Ini adalah peringatan keempat Anda. Hentikan membagikan link saluran! ⛔ (anti saluran)",
+    "Ini adalah peringatan kelima Anda. Anda bisa dikeluarkan dari grup! ⚠️ (anti saluran)",
+    "Ini adalah peringatan keenam Anda. Jangan bagikan link saluran lagi! 🚫 (anti saluran)",
+    "Ini adalah peringatan ketujuh Anda. Tolong patuhi aturan grup! ❗ (anti saluran)",
+    "Ini adalah peringatan kedelapan Anda. Jangan ulangi lagi! ⛔ (anti saluran)",
+    "Ini adalah peringatan kesembilan Anda. Ini peringatan terakhir! ⚠️ (anti saluran)",
+    "Anda telah mencapai batas peringatan 10 kali. Anda akan dikeluarkan dari grup. 🚫 (anti saluran)"
 ];
 
 const warningEmojis = [
-	"⚠️", "🚫", "❗", "⛔", "⚠️", "🚫", "❗", "⛔", "⚠️", "🚫"
+    "⚠️", "🚫", "❗", "⛔", "⚠️", "🚫", "❗", "⛔", "⚠️", "🚫"
 ];
 
 /**
@@ -42,16 +43,16 @@ const warningEmojis = [
  * @returns {string} - Daftar pelanggar dengan jumlah pelanggaran mereka.
  */
 function getTopOffenders(groupId) {
-	const groupWarnings = warnings[groupId] || {};
-	const sortedWarnings = Object.entries(groupWarnings)
-		.sort(([, a], [, b]) => b - a)
-		.slice(0, 10);
+    const groupWarnings = warnings[groupId] || {};
+    const sortedWarnings = Object.entries(groupWarnings)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 10);
 
-	return sortedWarnings.map(([participant, count], index) => {
-		const displayName = participant.split('@')[0];
-		const emoji = count === 0 ? "✅" : warningEmojis[Math.min(count - 1, warningEmojis.length - 1)];
-		return `${index + 1}. @${displayName} (${count} pelanggaran) ${emoji}`;
-	}).join('\n');
+    return sortedWarnings.map(([participant, count], index) => {
+        const displayName = participant.split('@')[0];
+        const emoji = count === 0 ? "✅" : warningEmojis[Math.min(count - 1, warningEmojis.length - 1)];
+        return `${index + 1}. @${displayName} (${count} pelanggaran) ${emoji}`;
+    }).join('\n');
 }
 
 async function handleViolation(Wilykun, groupId, user) {
@@ -77,6 +78,7 @@ async function tagUser(Wilykun, groupId, user) {
     const groupName = groupMetadata.subject;
     const offenderCount = Object.keys(warnings[groupId]).length;
     const topOffenders = getTopOffenders(groupId);
+	const autoKickEnabled = process.env.AUTO_KICK_ENABLED === 'true' ? 'Aktif ✅' : 'Tidak Aktif ❌';
 
     // Get Profile Picture User
     let ppuser;
@@ -88,7 +90,7 @@ async function tagUser(Wilykun, groupId, user) {
 
     await Wilykun.sendMessage(groupId, {
         image: { url: ppuser },
-        caption: `────────────────────\n👋 Halo @${user.split('@')[0]}, ⚠️ Waduh, fitur auto kick dimatikan. Kamu aman dan tidak di-kick. Pelanggaran kamu dihapus jadi 0.\n────────────────────\n*Nama Grup*: ${groupName}\n*Daftar Pelanggar: (${offenderCount} orang)*\n${topOffenders}\n────────────────────`,
+        caption: `────────────────────\n👋 Halo @${user.split('@')[0]}, ⚠️ Waduh, fitur auto kick dimatikan. Kamu aman dan tidak di-kick. Pelanggaran kamu dihapus jadi 0.\n────────────────────\n*Fitur Auto Kick*: ${autoKickEnabled}\n────────────────────\n*Nama Grup*: ${groupName}\n*Daftar Pelanggar: (${offenderCount} orang)*\n${topOffenders}\n────────────────────`,
         contextInfo: {
             mentionedJid: [user, ...Object.keys(warnings[groupId])],
             forwardingScore: 100,
@@ -109,24 +111,26 @@ function resetViolationCount(groupId, user) {
     }
 }
 
-export async function handleAntiWaMeLink(Wilykun, m, store) {
-	if (process.env.ENABLE_ANTI_WAME_LINK === 'true' && m.key.remoteJid.endsWith('@g.us') && (m.message.conversation || m.message.extendedTextMessage?.text) && !m.key.fromMe) {
-		const messageText = m.message.conversation || m.message.extendedTextMessage?.text;
-		const waMeRegex = /wa\.me/i;
-		if (waMeRegex.test(messageText)) {
+/**
+ * Fungsi untuk memeriksa dan menghapus link saluran di grup chat.
+ * @param {import('baileys').WASocket} Wilykun - Instance WASocket.
+ * @param {import('baileys').WAMessage} m - Pesan yang diterima.
+ * @param {object} store - Penyimpanan data grup dan kontak.
+ */
+export async function handleAntiChannelLink(Wilykun, m, store) {
+	const channelLinkPattern = /https:\/\/t\.me\/[a-zA-Z0-9_]+|https:\/\/whatsapp\.com\/channel\/[a-zA-Z0-9_]+|whatsapp\.com\/channel\/[a-zA-Z0-9_]+/g;
+	const messageContent = m.message.conversation || m.message.extendedTextMessage?.text || '';
+	const isChannelLink = channelLinkPattern.test(messageContent);
+
+	if (isChannelLink) {
+		const groupMetadata = store.groupMetadata[m.key.remoteJid];
+		const isAdmin = groupMetadata.participants.some(participant => participant.id === m.key.participant && participant.admin);
+		const isBot = m.key.participant === Wilykun.user.id;
+
+		if (!isAdmin && !isBot) {
 			const participant = m.key.participant || m.key.remoteJid;
 			const contact = store.contacts[participant] || {};
 			const displayName = contact.notify || contact.vname || contact.name || participant.split('@')[0];
-			const groupMetadata = await Wilykun.groupMetadata(m.key.remoteJid);
-			const groupName = groupMetadata.subject;
-			const groupOwner = groupMetadata.owner;
-			const admins = groupMetadata.participants.filter(p => p.admin).map(p => p.id);
-
-			// Cek apakah pengirim adalah admin atau bot
-			if (admins.includes(participant) || participant === groupOwner) {
-				console.log(`Message with wa.me link from admin or bot ${displayName} in group: ${m.key.remoteJid} not deleted`);
-				return;
-			}
 
 			// Tambahkan atau perbarui jumlah peringatan
 			if (!warnings[m.key.remoteJid]) {
@@ -159,7 +163,7 @@ export async function handleAntiWaMeLink(Wilykun, m, store) {
 					image: { url: ppuser },
 					caption: `────────────────────\n👋 Halo @${participant.split('@')[0]}, ${warningMessage}\n────────────────────\n*Fitur Auto Kick*: ${autoKickEnabled}\n────────────────────\n*Nama Grup*: ${groupMetadata.subject} 🤗🤗🤗\n*Daftar Pelanggar: (${offenderCount} orang)*\n${topOffenders}\n────────────────────`,
 					contextInfo: {
-						mentionedJid: [participant, groupOwner, ...Object.keys(warnings[m.key.remoteJid])],
+						mentionedJid: [participant, groupMetadata.owner, ...Object.keys(warnings[m.key.remoteJid])],
 						forwardingScore: 100,
 						isForwarded: true,
 						forwardedNewsletterMessageInfo: {
@@ -175,7 +179,7 @@ export async function handleAntiWaMeLink(Wilykun, m, store) {
 					image: { url: ppuser },
 					caption: `────────────────────\n👋 Halo @${participant.split('@')[0]}, ${warningMessage}\n────────────────────\n*Fitur Auto Kick*: ${autoKickEnabled}\n────────────────────\n*Nama Group*: ${groupMetadata.subject} 🤗🤗🤗\n*Daftar Pelanggar (${offenderCount} Orang):*\n${topOffenders}\n────────────────────`,
 					contextInfo: {
-						mentionedJid: [participant, groupOwner, ...Object.keys(warnings[m.key.remoteJid])],
+						mentionedJid: [participant, groupMetadata.owner, ...Object.keys(warnings[m.key.remoteJid])],
 						forwardingScore: 100,
 						isForwarded: true,
 						forwardedNewsletterMessageInfo: {
@@ -189,7 +193,7 @@ export async function handleAntiWaMeLink(Wilykun, m, store) {
 			}
 
 			await Wilykun.sendMessage(m.key.remoteJid, { delete: m.key });
-			console.log(`Deleted message with wa.me link from ${displayName} in group: ${m.key.remoteJid}`);
+			console.log(`Deleted message with channel link from ${displayName} in group: ${m.key.remoteJid}`);
 		}
 	}
 }
