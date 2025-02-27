@@ -31,6 +31,7 @@ import { handleAntiWaMeLink } from './FITUR_BY_WILY/ANTI_GC/antiwame.js'; // Imp
 import { handleAntiForwardedNewsletter } from './FITUR_BY_WILY/ANTI_GC/antiforwardednewsletter.js'; // Impor fungsi handleAntiForwardedNewsletter
 import { handleAntiChannelLink } from './FITUR_BY_WILY/ANTI_GC/antisaluran.js'; // Impor fungsi handleAntiChannelLink
 import { handleAntiGroupLink } from './FITUR_BY_WILY/ANTI_GC/antigroup.js'; // Import the new function
+import { handleGroupChat } from './FITUR_BY_WILY/buka_tutup_gc.js'; // Impor fungsi handleGroupChat
 
 import treeKill from './lib/tree-kill.js';
 import serialize, { Client } from './lib/serialize.js';
@@ -39,6 +40,7 @@ import serialize, { Client } from './lib/serialize.js';
 
 import { sendConnectionMessage } from './NOTIFIKASI/hehe.js'; // Impor fungsi sendConnectionMessage
 import { sendTelegram } from './lib/function.js'; // Impor fungsi sendTelegram
+import { autoClearSession } from './CLEAR_SESSION/autoclearsession.js'; // Impor fungsi autoClearSession
 
 const logger = pino({ timestamp: () => `,"time":"${new Date().toJSON()}"` }).child({ class: 'Wilykun' });
 logger.level = 'fatal';
@@ -59,42 +61,6 @@ const enableWelcomeMessage = process.env.ENABLE_WELCOME_MESSAGE === 'true';
 const enableGoodbyeMessage = process.env.ENABLE_GOODBYE_MESSAGE === 'true';
 const enableAntiChannelLink = process.env.ENABLE_ANTI_CHANNEL_LINK === 'true';
 const enableAntiGroupLink = process.env.ENABLE_ANTI_GROUP_LINK === 'true';
-
-function autoClearSession() {
-    const sessionDir = path.join(process.cwd(), process.env.SESSION_DIR || 'session'); // Sesuaikan dengan path session dari .env
-    const clearInterval = parseInt(process.env.CLEAR_INTERVAL, 10) || 2 * 60 * 60 * 1000; // Interval dari .env
-    
-    setInterval(async () => {
-        try {
-            const files = fs.readdirSync(sessionDir);
-            const filteredFiles = files.filter(file => 
-                file.startsWith('pre-key') ||
-                file.startsWith('sender-key') ||
-                file.startsWith('session-') ||
-                file.startsWith('app-state')
-            );
-
-            if (filteredFiles.length === 0) return;
-
-            console.log(chalk.yellow('======================================================'));
-            console.log(chalk.yellow('🧹 [AUTO CLEAN] Memulai pembersihan sesi otomatis...'));
-            console.log(chalk.yellow('======================================================'));
-            
-            filteredFiles.forEach(file => {
-                fs.unlinkSync(path.join(sessionDir, file));
-            });
-
-            console.log(chalk.green('======================================================'));
-            console.log(chalk.green(`🗑️ [AUTO CLEAN] Menghapus ${filteredFiles.length} file sesi`));
-            console.log(chalk.green('✅ Berhasil Menghapus sesi'));
-            console.log(chalk.green('======================================================'));
-        } catch (error) {
-            console.error(chalk.red('======================================================'));
-            console.error(chalk.red('❌ [AUTO CLEAN ERROR] Terjadi kesalahan saat pembersihan sesi otomatis'));
-            console.error(chalk.red('======================================================'), error);
-        }
-    }, clearInterval);
-}
 
 // Jalankan saat panel start jika diaktifkan
 if (process.env.AUTO_CLEAR_SESSION_ENABLED === 'true') {
@@ -357,6 +323,32 @@ const startSock = async () => {
 
 		// kanggo kes
 		await (await import(`./message.js?v=${Date.now()}`)).default(Wilykun, store, m);
+	});
+
+	Wilykun.ev.on('groups.update', async updates => {
+		for (const update of updates) {
+			const id = update.id;
+			if (update.subject) {
+				const metadata = await Wilykun.groupMetadata(id);
+				const participants = metadata.participants.map(p => p.id);
+				const admin = participants.find(p => p === update.subjectOwner);
+				const message = `📸 Nama grup telah diubah oleh @${admin.split('@')[0]}`;
+				console.log(`Group ID: ${id}, Admin: ${admin}`);
+				await Wilykun.sendMessage(id, { text: message, mentions: [admin] });
+			}
+			if (update.icon) {
+				const metadata = await Wilykun.groupMetadata(id);
+				const participants = metadata.participants.map(p => p.id);
+				const admin = participants.find(p => p === update.iconOwner);
+				const message = `📸 Icon grup telah diubah oleh @${admin.split('@')[0]}`;
+				console.log(`Group ID: ${id}, Admin: ${admin}`);
+				await Wilykun.sendMessage(id, { text: message, mentions: [admin] });
+			}
+		}
+	});
+
+	Wilykun.ev.on('messages.upsert', async ({ messages }) => {
+		await handleGroupChat(Wilykun, store, messages); // Pindahkan penanganan ke handleGroupChat
 	});
 
 	setInterval(async () => {
