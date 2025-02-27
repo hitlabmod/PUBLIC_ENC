@@ -88,6 +88,7 @@ JUMLAH ANGGOTA SAAT INI : *{ ${memberCount} 👥 }*`,
 
 				await Wilykun.sendMessage(id, welcomeMessage);
 				sentWelcomeMessages.add(participant); // Tandai peserta sebagai sudah dikirim pesan
+				console.log(`Pesan selamat datang dikirim ke ${participant.split('@')[0]} di grup ${id}`);
 
 				// Mengambil URL musik dari GitHub
 				const musicUrls = await getMusicUrls();
@@ -109,6 +110,7 @@ JUMLAH ANGGOTA SAAT INI : *{ ${memberCount} 👥 }*`,
 				};
 
 				await Wilykun.sendMessage(id, audioMessage);
+				console.log(`Pesan audio selamat datang dikirim ke ${participant.split('@')[0]} di grup ${id}`);
 			}
 			break; // Keluar dari loop jika berhasil mengirim pesan
 		} catch (error) {

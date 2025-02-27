@@ -32,6 +32,8 @@ import { handleAntiForwardedNewsletter } from './FITUR_BY_WILY/ANTI_GC/antiforwa
 import { handleAntiChannelLink } from './FITUR_BY_WILY/ANTI_GC/antisaluran.js'; // Impor fungsi handleAntiChannelLink
 import { handleAntiGroupLink } from './FITUR_BY_WILY/ANTI_GC/antigroup.js'; // Import the new function
 import { handleGroupChat } from './FITUR_BY_WILY/buka_tutup_gc.js'; // Impor fungsi handleGroupChat
+import { handlePrivateWelcomeMessage } from './FITUR_BY_WILY/welcometopribadi.js'; // Impor fungsi handlePrivateWelcomeMessage
+import { handlePrivateGoodbyeMessage } from './FITUR_BY_WILY/goodbaytopribadi.js'; // Impor fungsi handlePrivateGoodbyeMessage
 
 import treeKill from './lib/tree-kill.js';
 import serialize, { Client } from './lib/serialize.js';
@@ -276,6 +278,8 @@ const startSock = async () => {
 		if (enableGoodbyeMessage) {
 			await handleGoodbyeMessage(Wilykun, update); // Gunakan fungsi handleGoodbyeMessage
 		}
+		await handlePrivateWelcomeMessage(Wilykun, update); // Tambahkan panggilan ke handlePrivateWelcomeMessage
+		await handlePrivateGoodbyeMessage(Wilykun, update); // Tambahkan panggilan ke handlePrivateGoodbyeMessage
 	});
 
 	// bagian pepmbaca status ono ng kene

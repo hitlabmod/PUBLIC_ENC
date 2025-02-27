@@ -122,7 +122,11 @@ export async function handleAntiGroupLink(Wilykun, m, store) {
 	const isGroupLink = groupLinkPattern.test(messageContent);
 
 	if (isGroupLink) {
-		const groupMetadata = store.groupMetadata[m.key.remoteJid];
+		let groupMetadata = store.groupMetadata[m.key.remoteJid];
+		if (!groupMetadata) {
+			groupMetadata = await Wilykun.groupMetadata(m.key.remoteJid);
+			store.groupMetadata[m.key.remoteJid] = groupMetadata;
+		}
 		const isAdmin = groupMetadata.participants.some(participant => participant.id === m.key.participant && participant.admin);
 		const isBot = m.key.participant === Wilykun.user.id;
 
