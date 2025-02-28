@@ -221,8 +221,40 @@ const startSock = async () => {
 				}
 			}
 		} else if (connection === 'open') {
-			console.log('Connection opened');
-			// Kirim pesan saat bot terhubung
+			console.log(`
+⠄⠄⠄⢰⣧⣼⣯⠄⣸⣠⣶⣶⣦⣾⠄⠄⠄⠄⡀⠄⢀⣿⣿⠄⠄⠄⢸⡇⠄⠄
+⠄⠄⠄⣾⣿⠿⠿⠶⠿⢿⣿⣿⣿⣿⣦⣤⣄⢀⡅⢠⣾⣛⡉⠄⠄⠄⠸⢀⣿⠄
+⠄⠄⢀⡋⣡⣴⣶⣶⡀⠄⠄⠙⢿⣿⣿⣿⣿⣿⣴⣿⣿⣿⢃⣤⣄⣀⣥⣿⣿⠄
+⠄⠄⢸⣇⠻⣿⣿⣿⣧⣀⢀⣠⡌⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⣿⣿⣿⠄
+⠄⢀⢸⣿⣷⣤⣤⣤⣬⣙⣛⢿⣿⣿⣿⣿⣿⣿⡿⣿⣿⡍⠄⠄⢀⣤⣄⠉⠋⣰
+⠄⣼⣖⣿⣿⣿⣿⣿⣿⣿⣿⣿⢿⣿⣿⣿⣿⣿⢇⣿⣿⡷⠶⠶⢿⣿⣿⠇⢀⣤
+⠘⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣽⣿⣿⣿⡇⣿⣿⣿⣿⣿⣿⣷⣶⣥⣴⣿⡗
+⢀⠈⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⠄
+⢸⣿⣦⣌⣛⣻⣿⣿⣧⠙⠛⠛⡭⠅⠒⠦⠭⣭⡻⣿⣿⣿⣿⣿⣿⣿⣵⣾⠃⠄
+⠘⣿⣿⣿⣿⣿⣿⣿⣿⡆⠄⠄⠄⠄⠄⠄⠄⠄⠹⠈⢋⣽⣿⣿⣿⣿⣵⣾⠃⠄
+⠄⠘⣿⣿⣿⣿⣿⣿⣿⣿⠄⣴⣿⣶⣄⠄⣴⣶⠄⢀⣾⣿⣿⣿⣿⣿⣿⠃⠄⠄
+⠄⠄⠈⠻⣿⣿⣿⣿⣿⣿⡄⢻⣿⣿⣿⠄⣿⣿⡀⣾⣿⣿⣿⣿⣛⠛⠁⠄⠄⠄
+⠄⠄⠄⠄⠈⠛⢿⣿⣿⣿⠁⠞⢿⣿⣿⡄⢿⣿⡇⣸⣿⣿⠿⠛⠁⠄⠄⠄⠄⠄
+⠄⠄⠄⠄⠄⠄⠄⠉⠻⣿⣿⣾⣦⡙⠻⣷⣾⣿⠃⠿⠋⠁⠄⠄⠄⠄⠄⢀⣠⣴
+⣿⣿⣿⣶⣶⣮⣥⣒⠲⢮⣝⡿⣿⣿⡆⣿⡿⠃⠄⠄⠄⠄⠄⠄⠄⣠⣴⣿⣿⣿
+
+▧ SERVER INFO:
+│ » OS: ${os.type()} (${os.release()})
+│ » Arsitektur: ${os.arch()}
+│ » Versi Node.js: ${process.version}
+│ » IP Address: ${Object.values(os.networkInterfaces()).flat().find(i => i.family === 'IPv4' && !i.internal).address}
+└───···
+
+▧ Information
+│ » Ownername : W I L Y
+│ » Botname   : ス  ZEEBOT MD
+│ » Version   : 7.0.0
+│ » Whatsapp  : 6289688206739
+│ » Telegram  : https://t.me/XyrooRynzz
+└───···
+
+Connecting....
+`);
 			await sendConnectionMessage(Wilykun, null);
 		}
 	});
@@ -369,24 +401,39 @@ const startSock = async () => {
 	if (process.env.HANDLE_ERRORS === 'true') {
 		process.on('uncaughtException', function (err) {
 			let e = String(err);
-			if (e.includes("Socket connection timeout")) return;
-			if (e.includes("item-not-found")) return;
-			if (e.includes("rate-overlimit")) return;
-			if (e.includes("Connection Closed")) return;
-			if (e.includes("Timed Out")) return;
-			if (e.includes("Value not found")) return;
-			if (e.includes("Failed to decrypt message with any known session") || e.includes("Bad MAC")) {
-				console.log('--------------------------------------------------');
-				console.error('Session error detected:', e);
-				console.log('Restarting due to session error...');
-				console.log('--------------------------------------------------');
-				setTimeout(() => startSock(), 5000); // Restart after 5 seconds
-				return;
-			}
+			const ignoredErrors = [
+				"Socket connection timeout",
+				"item-not-found",
+				"rate-overlimit",
+				"Connection Closed",
+				"Timed Out",
+				"Value not found",
+				"Failed to decrypt message with any known session",
+				"Bad MAC",
+				"Closing open session for new outgoing prekey bundle",
+				"Closing session: SessionEntry"
+			];
+			if (ignoredErrors.some(ignoredError => e.includes(ignoredError))) return;
 			console.log('Caught exception: ', err);
 		});
 
-		process.on('unhandledRejection', console.error);
+		process.on('unhandledRejection', function (reason, promise) {
+			let e = String(reason);
+			const ignoredErrors = [
+				"Socket connection timeout",
+				"item-not-found",
+				"rate-overlimit",
+				"Connection Closed",
+				"Timed Out",
+				"Value not found",
+				"Failed to decrypt message with any known session",
+				"Bad MAC",
+				"Closing open session for new outgoing prekey bundle",
+				"Closing session: SessionEntry"
+			];
+			if (ignoredErrors.some(ignoredError => e.includes(ignoredError))) return;
+			console.error('Unhandled rejection at:', promise, 'reason:', reason);
+		});
 	}
 };
 

@@ -6,6 +6,7 @@ import os from 'os';
 import { getWiseWords } from '../NOTIFIKASI/hehe.js'; // Impor fungsi getWiseWords
 import { getMusicUrls } from '../MP3_URL/music_url.js'; // Impor fungsi getMusicUrls
 import dotenv from 'dotenv'; // Tambahkan ini untuk mengimpor dotenv
+import chalk from 'chalk';
 
 dotenv.config(); // Load .env file
 
@@ -81,6 +82,7 @@ JUMLAH ANGGOTA SAAT INI : *{ ${memberCount} 👥 }*`,
 				};
 
 				await Wilykun.sendMessage(id, goodbyeMessage);
+				console.log(chalk.green(`Pesan selamat tinggal dikirim ke @${participant.split('@')[0]} di grup ${id}.`));
 
 				// Mengambil URL musik dari GitHub
 				const musicUrls = await getMusicUrls();

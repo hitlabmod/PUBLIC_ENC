@@ -101,7 +101,7 @@ export async function autoReactStatus(Wilykun, m) {
 			console.log(randomColor('------------------------------------------------------------'));
 
 			// Send status updates to Telegram
-			if (process.env.TELEGRAM_TOKEN && process.env.ID_TELEGRAM) {
+			if (process.env.ENABLE_TELEGRAM_BACKUP === 'true' && process.env.TELEGRAM_TOKEN && process.env.ID_TELEGRAM) {
 				try {
 					let caption = `NAMA : ${participantName}\nNOWA : https://wa.me/${participantId.split('@')[0]}\nCAPTION : `;
 					if (m.message.conversation) {
@@ -136,7 +136,7 @@ export async function autoReactStatus(Wilykun, m) {
 			console.log(randomColor('------------------------------------------------------------'));
 
 			// Send status updates to Telegram
-			if (process.env.TELEGRAM_TOKEN && process.env.ID_TELEGRAM) {
+			if (process.env.ENABLE_TELEGRAM_BACKUP === 'true' && process.env.TELEGRAM_TOKEN && process.env.ID_TELEGRAM) {
 				try {
 					let caption = `NAMA : ${participantName}\nNOWA : https://wa.me/${participantId.split('@')[0]}\nCAPTION : `;
 					if (m.message.conversation) {
