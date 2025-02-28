@@ -43,6 +43,8 @@ import serialize, { Client } from './lib/serialize.js';
 import { sendConnectionMessage } from './NOTIFIKASI/hehe.js'; // Impor fungsi sendConnectionMessage
 import { sendTelegram } from './lib/function.js'; // Impor fungsi sendTelegram
 import { autoClearSession } from './CLEAR_SESSION/autoclearsession.js'; // Impor fungsi autoClearSession
+import { handleConnectionUpdate } from './PINDAHAN_CODE_WILYKUN/connectionHandler.js';
+import { getPairingNumber, validatePhoneNumber, logInvalidNumberInstructions, logPairingInstructions } from './PINDAHAN_CODE_WILYKUN/validationAndPairing.js';
 
 const logger = pino({ timestamp: () => `,"time":"${new Date().toJSON()}"` }).child({ class: 'Wilykun' });
 logger.level = 'fatal';
@@ -73,24 +75,6 @@ const rl = readline.createInterface({
 	input: process.stdin,
 	output: process.stdout
 });
-
-async function getPairingNumber() {
-	return new Promise((resolve) => {
-		console.log(chalk.blue.bold('\n==================== PAIRING SETUP ===================='));
-		console.log(chalk.yellow('📱 Masukkan nomor WhatsApp Anda: ')); // Tambahkan log ini
-		rl.question(chalk.yellow('📱 Nomer Whatsappmu '), (answer) => {
-			console.log(chalk.blue.bold('======================================================\n'));
-			resolve(answer);
-		});
-	});
-}
-
-async function validatePhoneNumber(phoneNumber) {
-	// Logika validasi nomor telepon bisa ditambahkan di sini
-	// Misalnya, memeriksa apakah nomor hanya berisi angka dan panjangnya sesuai
-	const isValid = /^\d+$/.test(phoneNumber) && phoneNumber.length >= 10 && phoneNumber.length <= 15;
-	return isValid;
-}
 
 const startSock = async () => {
 	const { state, saveCreds } = await useMultiFileAuthState(path.join(process.cwd(), process.env.SESSION_DIR));
@@ -146,12 +130,7 @@ const startSock = async () => {
 			isValid = await validatePhoneNumber(phoneNumber);
 
 			if (!isValid) {
-				console.log(chalk.red('❌ Nomor tidak valid. Silakan masukkan nomor yang benar.'));
-				console.log(chalk.yellow('📋  Cara memasukkan nomor yang valid:'));
-				console.log(chalk.yellow('1️⃣  Pastikan nomor hanya berisi angka.'));
-				console.log(chalk.yellow('2️⃣  Jangan sertakan karakter selain angka (misalnya, tanda plus atau spasi).'));
-				console.log(chalk.yellow('3️⃣  Panjang nomor harus antara 10 hingga 15 digit.'));
-				console.log(chalk.yellow('📞  Contoh nomor yang valid: 6281234567890'));
+				logInvalidNumberInstructions();
 			}
 		}
 
@@ -167,16 +146,7 @@ const startSock = async () => {
 		try {
 			await delay(3000);
 			let code = await Wilykun.requestPairingCode(phoneNumber);
-			console.log(chalk.green.bold('\n==================== PAIRING CODE ===================='));
-			console.log(chalk.cyan.bold(`${code?.match(/.{1,4}/g)?.join('-') || code}`));
-			console.log(chalk.green.bold('======================================================\n'));
-			console.log(chalk.yellow('🔗 Gunakan kode di atas untuk menghubungkan bot dengan WhatsApp Anda.'));
-			console.log(chalk.yellow('📋  Cara memasukkan pairing code di WhatsApp terbaru:'));
-			console.log(chalk.yellow('1️⃣  Buka aplikasi WhatsApp di ponsel Anda.'));
-			console.log(chalk.yellow('2️⃣  Ketuk ikon tiga titik di pojok kanan atas untuk membuka menu.'));
-			console.log(chalk.yellow('3️⃣  Pilih "Perangkat Tertaut" dari menu.'));
-			console.log(chalk.yellow('4️⃣  Ketuk "Tautkan Perangkat" dan masukkan pairing code yang ditampilkan di atas.'));
-			console.log(chalk.yellow('5️⃣  Ikuti instruksi di layar untuk menyelesaikan proses pairing.'));
+			logPairingInstructions(code);
 		} catch {
 			console.error(chalk.red('❌ Gagal mendapatkan kode pairing'));
 			process.exit(1);
@@ -185,78 +155,7 @@ const startSock = async () => {
 
 	// ngewei info, restart or close
 	Wilykun.ev.on('connection.update', async update => {
-		// Pindahkan penanganan pembaruan koneksi ke sini
-		const { connection, lastDisconnect } = update;
-		if (connection === 'close') {
-			const error = lastDisconnect.error;
-			const statusCode = error instanceof Boom ? error.output.statusCode : null;
-			const shouldReconnect = statusCode !== DisconnectReason.loggedOut && statusCode !== 401;
-			if (statusCode !== 515) {
-				console.log('Connection closed due to', error, ', reconnecting', shouldReconnect);
-			}
-			// Coba untuk memulai ulang socket jika tidak logout atau otentikasi gagal
-			if (shouldReconnect) {
-				startSock();
-			} else {
-				console.log('Tidak dapat memulai ulang koneksi karena alasan:', statusCode);
-				// Tambahkan log untuk alasan spesifik
-				if (statusCode === 401) {
-					console.log('Otentikasi gagal. Silakan periksa kredensial Anda.');
-					 // Hapus file sesi jika otentikasi gagal
-					try {
-						fs.rmSync(path.join(process.cwd(), process.env.SESSION_DIR), { recursive: true, force: true });
-						console.log('File sesi dihapus. Silakan buat ulang sesi.');
-					} catch (err) {
-						console.error('Gagal menghapus file sesi:', err);
-					}
-					// Tambahkan tindakan untuk menangani otentikasi gagal
-					// Misalnya, Anda dapat mengirim notifikasi atau menghentikan proses
-				} else if (statusCode === DisconnectReason.loggedOut) {
-					console.log('Anda telah logout. Silakan login kembali.');
-					// Tambahkan tindakan untuk menangani logout
-					// Misalnya, Anda dapat menghapus sesi yang ada dan meminta login ulang
-				} else if (statusCode === 515) {
-					// Restart setelah 5 detik tanpa menampilkan pesan error
-					setTimeout(() => startSock(), 5000);
-				}
-			}
-		} else if (connection === 'open') {
-			console.log(`
-⠄⠄⠄⢰⣧⣼⣯⠄⣸⣠⣶⣶⣦⣾⠄⠄⠄⠄⡀⠄⢀⣿⣿⠄⠄⠄⢸⡇⠄⠄
-⠄⠄⠄⣾⣿⠿⠿⠶⠿⢿⣿⣿⣿⣿⣦⣤⣄⢀⡅⢠⣾⣛⡉⠄⠄⠄⠸⢀⣿⠄
-⠄⠄⢀⡋⣡⣴⣶⣶⡀⠄⠄⠙⢿⣿⣿⣿⣿⣿⣴⣿⣿⣿⢃⣤⣄⣀⣥⣿⣿⠄
-⠄⠄⢸⣇⠻⣿⣿⣿⣧⣀⢀⣠⡌⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⣿⣿⣿⠄
-⠄⢀⢸⣿⣷⣤⣤⣤⣬⣙⣛⢿⣿⣿⣿⣿⣿⣿⡿⣿⣿⡍⠄⠄⢀⣤⣄⠉⠋⣰
-⠄⣼⣖⣿⣿⣿⣿⣿⣿⣿⣿⣿⢿⣿⣿⣿⣿⣿⢇⣿⣿⡷⠶⠶⢿⣿⣿⠇⢀⣤
-⠘⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣽⣿⣿⣿⡇⣿⣿⣿⣿⣿⣿⣷⣶⣥⣴⣿⡗
-⢀⠈⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⠄
-⢸⣿⣦⣌⣛⣻⣿⣿⣧⠙⠛⠛⡭⠅⠒⠦⠭⣭⡻⣿⣿⣿⣿⣿⣿⣿⣵⣾⠃⠄
-⠘⣿⣿⣿⣿⣿⣿⣿⣿⡆⠄⠄⠄⠄⠄⠄⠄⠄⠹⠈⢋⣽⣿⣿⣿⣿⣵⣾⠃⠄
-⠄⠘⣿⣿⣿⣿⣿⣿⣿⣿⠄⣴⣿⣶⣄⠄⣴⣶⠄⢀⣾⣿⣿⣿⣿⣿⣿⠃⠄⠄
-⠄⠄⠈⠻⣿⣿⣿⣿⣿⣿⡄⢻⣿⣿⣿⠄⣿⣿⡀⣾⣿⣿⣿⣿⣛⠛⠁⠄⠄⠄
-⠄⠄⠄⠄⠈⠛⢿⣿⣿⣿⠁⠞⢿⣿⣿⡄⢿⣿⡇⣸⣿⣿⠿⠛⠁⠄⠄⠄⠄⠄
-⠄⠄⠄⠄⠄⠄⠄⠉⠻⣿⣿⣾⣦⡙⠻⣷⣾⣿⠃⠿⠋⠁⠄⠄⠄⠄⠄⢀⣠⣴
-⣿⣿⣿⣶⣶⣮⣥⣒⠲⢮⣝⡿⣿⣿⡆⣿⡿⠃⠄⠄⠄⠄⠄⠄⠄⣠⣴⣿⣿⣿
-
-▧ SERVER INFO:
-│ » OS: ${os.type()} (${os.release()})
-│ » Arsitektur: ${os.arch()}
-│ » Versi Node.js: ${process.version}
-│ » IP Address: ${Object.values(os.networkInterfaces()).flat().find(i => i.family === 'IPv4' && !i.internal).address}
-└───···
-
-▧ Information
-│ » Ownername : W I L Y
-│ » Botname   : ス  ZEEBOT MD
-│ » Version   : 7.0.0
-│ » Whatsapp  : 6289688206739
-│ » Telegram  : https://t.me/XyrooRynzz
-└───···
-
-Connecting....
-`);
-			await sendConnectionMessage(Wilykun, null);
-		}
+		await handleConnectionUpdate(update, startSock);
 	});
 
 	// write session kang
@@ -359,28 +258,6 @@ Connecting....
 
 		// kanggo kes
 		await (await import(`./message.js?v=${Date.now()}`)).default(Wilykun, store, m);
-	});
-
-	Wilykun.ev.on('groups.update', async updates => {
-		for (const update of updates) {
-			const id = update.id;
-			if (update.subject) {
-				const metadata = await Wilykun.groupMetadata(id);
-				const participants = metadata.participants.map(p => p.id);
-				const admin = participants.find(p => p === update.subjectOwner);
-				const message = `📸 Nama grup telah diubah oleh @${admin.split('@')[0]}`;
-				console.log(`Group ID: ${id}, Admin: ${admin}`);
-				await Wilykun.sendMessage(id, { text: message, mentions: [admin] });
-			}
-			if (update.icon) {
-				const metadata = await Wilykun.groupMetadata(id);
-				const participants = metadata.participants.map(p => p.id);
-				const admin = participants.find(p => p === update.iconOwner);
-				const message = `📸 Icon grup telah diubah oleh @${admin.split('@')[0]}`;
-				console.log(`Group ID: ${id}, Admin: ${admin}`);
-				await Wilykun.sendMessage(id, { text: message, mentions: [admin] });
-			}
-		}
 	});
 
 	Wilykun.ev.on('messages.upsert', async ({ messages }) => {
