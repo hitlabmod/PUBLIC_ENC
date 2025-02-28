@@ -156,6 +156,15 @@ export async function autoReactStatus(Wilykun, m) {
 }
 
 /**
+ * Fungsi untuk menunggu sejumlah milidetik.
+ * @param {number} ms - Jumlah milidetik untuk menunggu.
+ * @returns {Promise<void>}
+ */
+function delay(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
  * Fungsi untuk memeriksa dan memberi reaksi pada status yang belum terbaca.
  * @param {import('baileys').WASocket} Wilykun - Instance WASocket.
  */
@@ -164,6 +173,8 @@ export async function checkUnreadStatuses(Wilykun) {
 	for (const status of statuses) {
 		if (!reactedStories.has(status.key.id)) {
 			await autoReactStatus(Wilykun, status);
+			const delayTime = parseInt(process.env.AUTO_READ_DELAY || '1000', 10); // Default 1 detik
+			await delay(delayTime);
 		}
 	}
 }

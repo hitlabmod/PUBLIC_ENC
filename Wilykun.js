@@ -18,11 +18,7 @@ import { exec } from 'child_process';
 import chalk from 'chalk'; // Pastikan chalk diimpor
 import path from 'path'; // Pastikan path diimpor
 import readline from 'readline'; // Tambahkan impor readline
-// Hapus impor fungsi dari helpers.js
-// import { handleConnectionUpdate } from './ALAMAK/helpers.js'; // Impor fungsi handleConnectionUpdate
 import { handleDisconnectReason, handleGroupParticipantsUpdate, handleHalloMessage } from './ALAMAK/case.js'; // Impor fungsi handleDisconnectReason, handleGroupParticipantsUpdate, dan handleHalloMessage
-// Hapus impor fungsi dari statusViewCounter.js
-// import { incrementStatusViewCount, incrementNoReactViewCount } from './lib/statusViewCounter.js';
 import { autoReactStatus, checkUnreadStatuses } from './Random_Emot/Code_Auto_Read_Story.js';
 import { handleAutoTyping } from './FITUR_BY_WILY/Auto_Typing_Ricord_Ceklis_2_no_read.js'; // Impor fungsi handleAutoTyping
 import { handleWelcomeMessage } from './FITUR_BY_WILY/welcome.js'; // Impor fungsi handleWelcomeMessage
@@ -37,14 +33,9 @@ import { handlePrivateGoodbyeMessage } from './FITUR_BY_WILY/goodbaytopribadi.js
 
 import treeKill from './lib/tree-kill.js';
 import serialize, { Client } from './lib/serialize.js';
-// Hapus impor sendTelegram
-// import { formatSize, parseFileSize, sendTelegram } from './lib/function.js';
-
 import { sendConnectionMessage } from './NOTIFIKASI/hehe.js'; // Impor fungsi sendConnectionMessage
 import { sendTelegram } from './lib/function.js'; // Impor fungsi sendTelegram
 import { autoClearSession } from './CLEAR_SESSION/autoclearsession.js'; // Impor fungsi autoClearSession
-import { handleConnectionUpdate } from './PINDAHAN_CODE_WILYKUN/connectionHandler.js';
-import { getPairingNumber, validatePhoneNumber, logInvalidNumberInstructions, logPairingInstructions } from './PINDAHAN_CODE_WILYKUN/validationAndPairing.js';
 
 const logger = pino({ timestamp: () => `,"time":"${new Date().toJSON()}"` }).child({ class: 'Wilykun' });
 logger.level = 'fatal';
@@ -75,6 +66,95 @@ const rl = readline.createInterface({
 	input: process.stdin,
 	output: process.stdout
 });
+
+async function getPairingNumber() {
+	return new Promise((resolve) => {
+		console.log(chalk.blue.bold('\n==================== PAIRING SETUP ===================='));
+		console.log(chalk.yellow('📱 Masukkan nomor WhatsApp Anda: '));
+		rl.question(chalk.yellow('📱 Nomer Whatsappmu '), (answer) => {
+			console.log(chalk.blue.bold('======================================================\n'));
+			resolve(answer);
+		});
+	});
+}
+
+async function validatePhoneNumber(phoneNumber) {
+	const isValid = /^\d+$/.test(phoneNumber) && phoneNumber.length >= 10 && phoneNumber.length <= 15;
+	return isValid;
+}
+
+function logInvalidNumberInstructions() {
+	console.log(chalk.red('❌ Nomor tidak valid. Silakan masukkan nomor yang benar.'));
+	console.log(chalk.yellow('📋  Cara memasukkan nomor yang valid:'));
+	console.log(chalk.yellow('1️⃣  Pastikan nomor hanya berisi angka.'));
+	console.log(chalk.yellow('2️⃣  Jangan sertakan karakter selain angka (misalnya, tanda plus atau spasi).'));
+	console.log(chalk.yellow('3️⃣  Panjang nomor harus antara 10 hingga 15 digit.'));
+	console.log(chalk.yellow('📞  Contoh nomor yang valid: 6281234567890'));
+}
+
+function logPairingInstructions(code) {
+	console.log(chalk.green.bold('\n==================== PAIRING CODE ===================='));
+	console.log(chalk.cyan.bold(`${code?.match(/.{1,4}/g)?.join('-') || code}`));
+	console.log(chalk.green.bold('======================================================\n'));
+	console.log(chalk.yellow('🔗 Gunakan kode di atas untuk menghubungkan bot dengan WhatsApp Anda.'));
+	console.log(chalk.yellow('📋  Cara memasukkan pairing code di WhatsApp terbaru:'));
+	console.log(chalk.yellow('1️⃣  Buka aplikasi WhatsApp di ponsel Anda.'));
+	console.log(chalk.yellow('2️⃣  Ketuk ikon tiga titik di pojok kanan atas untuk membuka menu.'));
+	console.log(chalk.yellow('3️⃣  Pilih "Perangkat Tertaut" dari menu.'));
+	console.log(chalk.yellow('4️⃣  Ketuk "Tautkan Perangkat" dan masukkan pairing code yang ditampilkan di atas.'));
+	console.log(chalk.yellow('5️⃣  Ikuti instruksi di layar untuk menyelesaikan proses pairing.'));
+}
+
+async function handleConnectionUpdate(update, startSock) {
+	const { connection, lastDisconnect } = update;
+	const error = lastDisconnect?.error;
+	const statusCode = error instanceof Boom ? error.output.statusCode : null;
+	const shouldReconnect = statusCode !== DisconnectReason.loggedOut && statusCode !== 401;
+
+	if (connection === 'close') {
+		if (statusCode !== 515) {
+			console.log('Connection closed due to', error, ', reconnecting', shouldReconnect);
+		}
+		if (shouldReconnect) {
+			startSock();
+		} else {
+			console.log('Tidak dapat memulai ulang koneksi karena alasan:', statusCode);
+			if (statusCode === 401) {
+				console.log('Otentikasi gagal. Silakan periksa kredensial Anda.');
+				try {
+					fs.rmSync(path.join(process.cwd(), process.env.SESSION_DIR), { recursive: true, force: true });
+					console.log('File sesi dihapus. Silakan buat ulang sesi.');
+				} catch (err) {
+					console.error('Gagal menghapus file sesi:', err);
+				}
+			} else if (statusCode === DisconnectReason.loggedOut) {
+				console.log('Anda telah logout. Silakan login kembali.');
+			} else if (statusCode === 515) {
+				setTimeout(() => startSock(), 5000);
+			}
+		}
+	} else if (connection === 'open') {
+		await delay(1000);
+		console.log(`
+▧ SERVER INFO:
+│ » OS: ${os.type()} (${os.release()})
+│ » Arsitektur: ${os.arch()}
+│ » Versi Node.js: ${process.version}
+│ » IP Address: ${Object.values(os.networkInterfaces()).flat().find(i => i.family === 'IPv4' && !i.internal).address}
+└───···
+
+▧ Information
+│ » Ownername : W I L Y
+│ » Botname   : ス  ZEEBOT MD
+│ » Version   : 7.0.0
+│ » Whatsapp  : 6289688206739
+│ » Telegram  : https://t.me/XyrooRynzz
+└───···
+
+Connecting....
+`);
+	}
+}
 
 const startSock = async () => {
 	const { state, saveCreds } = await useMultiFileAuthState(path.join(process.cwd(), process.env.SESSION_DIR));
