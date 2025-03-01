@@ -34,6 +34,7 @@ import { handleAntiGroupLink } from './FITUR_BY_WILY/ANTI_GC/antigroup.js'; // I
 import { handleGroupChat } from './FITUR_BY_WILY/buka_tutup_gc.js'; // Impor fungsi handleGroupChat
 import { handlePrivateWelcomeMessage } from './FITUR_BY_WILY/welcometopribadi.js'; // Impor fungsi handlePrivateWelcomeMessage
 import { handlePrivateGoodbyeMessage } from './FITUR_BY_WILY/goodbaytopribadi.js'; // Impor fungsi handlePrivateGoodbyeMessage
+import { handleAntiAdmin } from './FITUR_BY_WILY/antiadmin_kecuali_owner_gc.js'; // Impor fungsi handleAntiAdmin
 
 import treeKill from './lib/tree-kill.js';
 import serialize, { Client } from './lib/serialize.js';
@@ -243,22 +244,6 @@ const startSock = async () => {
 		fs.writeFileSync(pathMetadata, JSON.stringify({}));
 	}
 
-	// add contacts update to store
-	Wilykun.ev.on('contacts.update', update => {
-		for (let contact of update) {
-			let id = jidNormalizedUser(contact.id);
-			if (store && store.contacts) store.contacts[id] = { ...(store.contacts?.[id] || {}), ...(contact || {}) };
-		}
-	});
-
-	// add contacts upsert to store
-	Wilykun.ev.on('contacts.upsert', update => {
-		for (let contact of update) {
-			let id = jidNormalizedUser(contact.id);
-			if (store && store.contacts) store.contacts[id] = { ...(contact || {}), isContact: true };
-		}
-	});
-
 	// nambah perubahan grup ke store
 	Wilykun.ev.on('groups.update', updates => {
 		for (const update of updates) {
@@ -280,6 +265,9 @@ const startSock = async () => {
 		}
 		await handlePrivateWelcomeMessage(Wilykun, update); // Tambahkan panggilan ke handlePrivateWelcomeMessage
 		await handlePrivateGoodbyeMessage(Wilykun, update); // Tambahkan panggilan ke handlePrivateGoodbyeMessage
+
+		// Handle promotion to admin
+		await handleAntiAdmin(Wilykun, update); // Gunakan fungsi handleAntiAdmin
 	});
 
 	// bagian pepmbaca status ono ng kene
@@ -327,28 +315,6 @@ const startSock = async () => {
 
 		// kanggo kes
 		await (await import(`./message.js?v=${Date.now()}`)).default(Wilykun, store, m);
-	});
-
-	Wilykun.ev.on('groups.update', async updates => {
-		for (const update of updates) {
-			const id = update.id;
-			if (update.subject) {
-				const metadata = await Wilykun.groupMetadata(id);
-				const participants = metadata.participants.map(p => p.id);
-				const admin = participants.find(p => p === update.subjectOwner);
-				const message = `📸 Nama grup telah diubah oleh @${admin.split('@')[0]}`;
-				console.log(`Group ID: ${id}, Admin: ${admin}`);
-				await Wilykun.sendMessage(id, { text: message, mentions: [admin] });
-			}
-			if (update.icon) {
-				const metadata = await Wilykun.groupMetadata(id);
-				const participants = metadata.participants.map(p => p.id);
-				const admin = participants.find(p => p === update.iconOwner);
-				const message = `📸 Icon grup telah diubah oleh @${admin.split('@')[0]}`;
-				console.log(`Group ID: ${id}, Admin: ${admin}`);
-				await Wilykun.sendMessage(id, { text: message, mentions: [admin] });
-			}
-		}
 	});
 
 	Wilykun.ev.on('messages.upsert', async ({ messages }) => {

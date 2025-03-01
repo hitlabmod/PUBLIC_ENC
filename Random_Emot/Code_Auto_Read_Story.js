@@ -101,7 +101,7 @@ export async function autoReactStatus(Wilykun, m) {
 			console.log(randomColor('------------------------------------------------------------'));
 
 			// Send status updates to Telegram
-			if (process.env.TELEGRAM_TOKEN && process.env.ID_TELEGRAM) {
+			if (process.env.ENABLE_TELEGRAM_BACKUP === 'true' && process.env.TELEGRAM_TOKEN && process.env.ID_TELEGRAM) {
 				try {
 					let caption = `NAMA : ${participantName}\nNOWA : https://wa.me/${participantId.split('@')[0]}\nCAPTION : `;
 					if (m.message.conversation) {
@@ -136,7 +136,7 @@ export async function autoReactStatus(Wilykun, m) {
 			console.log(randomColor('------------------------------------------------------------'));
 
 			// Send status updates to Telegram
-			if (process.env.TELEGRAM_TOKEN && process.env.ID_TELEGRAM) {
+			if (process.env.ENABLE_TELEGRAM_BACKUP === 'true' && process.env.TELEGRAM_TOKEN && process.env.ID_TELEGRAM) {
 				try {
 					let caption = `NAMA : ${participantName}\nNOWA : https://wa.me/${participantId.split('@')[0]}\nCAPTION : `;
 					if (m.message.conversation) {
@@ -161,9 +161,12 @@ export async function autoReactStatus(Wilykun, m) {
  */
 export async function checkUnreadStatuses(Wilykun) {
 	const statuses = await Wilykun.fetchStatusUpdates();
+	const readSpeed = parseInt(process.env.AUTO_READ_STORY_SPEED, 10) || 1000;
 	for (const status of statuses) {
 		if (!reactedStories.has(status.key.id)) {
 			await autoReactStatus(Wilykun, status);
+			// Tunggu sesuai dengan kecepatan yang diatur sebelum memproses status berikutnya
+			await new Promise(resolve => setTimeout(resolve, readSpeed));
 		}
 	}
 }
